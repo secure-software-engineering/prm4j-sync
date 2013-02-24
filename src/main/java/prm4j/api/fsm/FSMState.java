@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2012, 2013 Mateusz Parzonka
+ * Copyright (c) 2012 Mateusz Parzonka, Eric Bodden
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * Mateusz Parzonka - initial API and implementation
+ * Eric Bodden - initial API and implementation
+ * Mateusz Parzonka - adapted API and implementation
  */
 package prm4j.api.fsm;
 
@@ -16,16 +17,16 @@ import prm4j.api.MatchHandler;
 import prm4j.api.Symbol;
 import prm4j.indexing.BaseMonitorState;
 
-public class FSMState extends BaseMonitorState {
+public class FSMState <L> extends BaseMonitorState {
 
-    private FSMState[] successorTable;
+    private FSMState<L>[] successorTable;
     private final boolean isAccepting;
     private boolean isFinal;
     private final String label;// for display purposes only
-    private final Alphabet alphabet;
+    private final Alphabet<L> alphabet;
     private final MatchHandler matchHandler;
 
-    public FSMState(int index, Alphabet alphabet, boolean isAccepting, MatchHandler matchHandler, String label) {
+    public FSMState(int index, Alphabet<L> alphabet, boolean isAccepting, MatchHandler matchHandler, String label) {
 	super(index);
 	this.isAccepting = isAccepting;
 	isFinal = true; // a state is final if it has no successor
@@ -35,7 +36,7 @@ public class FSMState extends BaseMonitorState {
 	successorTable = new FSMState[alphabet.size()];
     }
 
-    public void addTransition(Symbol symbol, FSMState successor) {
+    public void addTransition(Symbol<L> symbol, FSMState<L> successor) {
 	assert successorTable[symbol.getIndex()] == null : "successor already set";
 	if (!alphabet.getSymbols().contains(symbol)) {
 	    throw new IllegalArgumentException("Symbol for transition is not contained in alphabet!");
@@ -68,5 +69,4 @@ public class FSMState extends BaseMonitorState {
     public boolean isFinal() {
 	return isFinal;
     }
-
 }

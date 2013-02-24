@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Mateusz Parzonka
+ * Copyright (c) 2012 Mateusz Parzonka, Eric Bodden
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,23 +11,46 @@
 package prm4j.api;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+
 
 /**
  * TODO implement auto-naming.
  */
-public class Alphabet {
+//public class Alphabet { Rahul
+public class Alphabet<L> implements Iterable<Symbol<L>>{
 
     private int symbolCount = 0;
     private int parameterCount = 0;
     private final Set<Parameter<?>> parameters;
-    private final Set<Symbol> symbols;
+    //private final Set<Symbol> symbols;
+    private final Set<Symbol<L>> symbols;	//Rahul
+    
+    
 
     public Alphabet() {
 	super();
 	parameters = new HashSet<Parameter<?>>();
-	symbols = new HashSet<Symbol>();
+	symbols = new HashSet<Symbol<L>>();
     }
+    
+	@Override
+	public Iterator<Symbol<L>> iterator() {	// Rahul added
+		return symbols.iterator();
+	}
+	
+	public Symbol<L> getSymbolByLabel(L l) {
+		for (Symbol<L> sym : this) {
+			if(sym.getLabel().equals(l)) {
+				return sym;
+			}
+		}
+		throw new IllegalArgumentException("Unknown symbol:" +l);
+	}
+
+ 
+    
 
     /**
      * Creates a parameter of type {@link Object}.
@@ -88,8 +111,8 @@ public class Alphabet {
      *
      * @return the symbol
      */
-    public Symbol0 createSymbol0() {
-	Symbol0 symbol = new Symbol0(this, symbolCount, "Symbol_" + symbolCount);
+    public Symbol0<L> createSymbol0() {
+	Symbol0<L> symbol = new Symbol0(this, symbolCount, "Symbol_" + symbolCount);
 	symbols.add(symbol);
 	symbolCount++;
 	return symbol;
@@ -101,8 +124,8 @@ public class Alphabet {
      * @param optionalName
      * @return the symbol
      */
-    public Symbol0 createSymbol0(String optionalName) {
-	Symbol0 symbol = new Symbol0(this, symbolCount, optionalName);
+    public Symbol0<L> createSymbol0(L optionalName) {
+	Symbol0<L> symbol = new Symbol0<L>(this, symbolCount, optionalName);
 	symbols.add(symbol);
 	symbolCount++;
 	return symbol;
@@ -114,8 +137,8 @@ public class Alphabet {
      * @param param1
      * @return the symbol
      */
-    public <P1> Symbol1<P1> createSymbol1(Parameter<P1> param1) {
-	Symbol1<P1> symbol = new Symbol1<P1>(this, symbolCount, "Symbol_" + symbolCount, param1);
+    public <P1> Symbol1<L,P1> createSymbol1(Parameter<P1> param1) {
+	Symbol1<L, P1> symbol = new Symbol1<L, P1>(this, symbolCount, "Symbol_" + symbolCount, param1);
 	symbols.add(symbol);
 	symbolCount++;
 	return symbol;
@@ -128,8 +151,8 @@ public class Alphabet {
      * @param param1
      * @return the symbol
      */
-    public <P1> Symbol1<P1> createSymbol1(String optionalName, Parameter<P1> param1) {
-	Symbol1<P1> symbol = new Symbol1<P1>(this, symbolCount, optionalName, param1);
+    public <P1> Symbol1<L, P1> createSymbol1(L optionalName, Parameter<P1> param1) {
+	Symbol1<L, P1> symbol = new Symbol1<L,P1>(this, symbolCount, optionalName, param1);
 	symbols.add(symbol);
 	symbolCount++;
 	return symbol;
@@ -142,8 +165,8 @@ public class Alphabet {
      * @param param2
      * @return the symbol
      */
-    public <P1, P2> Symbol2<P1, P2> createSymbol2(Parameter<P1> param1, Parameter<P2> param2) {
-	Symbol2<P1, P2> symbol = new Symbol2<P1, P2>(this, symbolCount, "Symbol_" + symbolCount, param1, param2);
+    public <P1, P2> Symbol2<L, P1, P2> createSymbol2(Parameter<P1> param1, Parameter<P2> param2) {
+	Symbol2<L, P1, P2> symbol = new Symbol2<L, P1, P2>(this, symbolCount, "Symbol_" + symbolCount, param1, param2);
 	symbols.add(symbol);
 	symbolCount++;
 	return symbol;
@@ -157,14 +180,19 @@ public class Alphabet {
      * @param param2
      * @return the symbol
      */
-    public <P1, P2> Symbol2<P1, P2> createSymbol2(String optionalName, Parameter<P1> param1, Parameter<P2> param2) {
-	Symbol2<P1, P2> symbol = new Symbol2<P1, P2>(this, symbolCount, optionalName, param1, param2);
+    public <P1, P2> Symbol2<L, P1, P2> createSymbol2(L optionalName, Parameter<P1> param1, Parameter<P2> param2) {
+	Symbol2<L, P1, P2> symbol = new Symbol2<L, P1, P2>(this, symbolCount, optionalName, param1, param2);
 	symbols.add(symbol);
 	symbolCount++;
 	return symbol;
     }
 
-    public Set<Symbol> getSymbols() {
+/*    public Set<Symbol> getSymbols() { // Rahul
+	return symbols;
+    }
+    */
+    
+    public Set<Symbol<L>> getSymbols() { // Rahul
 	return symbols;
     }
 

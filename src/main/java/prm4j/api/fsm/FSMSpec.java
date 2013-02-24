@@ -24,10 +24,10 @@ import prm4j.spec.FiniteSpec;
 
 public class FSMSpec implements FiniteSpec {
 
-    private final Set<BaseEvent> baseEvents;
-    private final Set<Parameter<?>> parameters;
-    private final Set<BaseMonitorState> states;
-    private final BaseMonitorState initialState;
+    protected final Set<BaseEvent> baseEvents;
+    protected final Set<Parameter<?>> parameters;
+    protected final Set<BaseMonitorState> states;
+    protected BaseMonitorState initialState;
 
     public FSMSpec(FSM fsm) {
 	baseEvents = unmodifiableSet(new HashSet<BaseEvent>(fsm.getAlphabet().getSymbols()));

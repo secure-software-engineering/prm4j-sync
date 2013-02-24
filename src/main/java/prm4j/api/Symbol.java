@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Mateusz Parzonka
+ * Copyright (c) 2012 Mateusz Parzonka, Eric Bodden
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,20 +19,29 @@ import java.util.Set;
  * Immutable.<br>
  * TODO ensure a symbol can be used only be one strategy
  */
-public abstract class Symbol implements BaseEvent {
+//public abstract class Symbol implements BaseEvent {
+public abstract class Symbol <L> implements BaseEvent { // Rahul
 
-    private final Alphabet alphabet;
+	private final Alphabet<L> alphabet;
     private final int index;
-    private final String uniqueName;
+    private final L uniqueName;
     private Set<Parameter<?>> parameterSet;
     private int[] parameterMask;
 
-    protected Symbol(Alphabet alphabet, int index, String uniqueName) {
+    protected Symbol(Alphabet <L> alphabet, int index, L uniqueName) {
 	super();
 	this.alphabet = alphabet;
 	this.index = index;
 	this.uniqueName = uniqueName;
 	parameterSet = new HashSet<Parameter<?>>();
+    }
+    
+    protected Symbol(Alphabet <L> alphabet, int index, String uniqueName) {
+    	super();
+    	this.alphabet = (Alphabet<L>) alphabet;
+    	this.index = index;
+    	this.uniqueName = (L) uniqueName;
+    	parameterSet = new HashSet<Parameter<?>>();
     }
 
     @Override
@@ -97,14 +106,18 @@ public abstract class Symbol implements BaseEvent {
 	return new Object[alphabet.getParameterCount()];
     }
 
-    @Override
+    /*@Override
     public String toString() {
 	return uniqueName;
-    }
+    }*/
 
     @Override
     public int[] getParameterMask() {
 	return parameterMask;
     }
+    
+	public L getLabel() {
+		return uniqueName;
+	}
 
 }

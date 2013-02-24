@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Mateusz Parzonka
+ * Copyright (c) 2012 Mateusz Parzonka, Eric Bodden
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,17 +10,25 @@
  */
 package prm4j.api;
 
-public class Symbol1<P1> extends Symbol {
+public class Symbol1<L, P1> extends Symbol<L> {
 
     private final Parameter<P1> param1;
 
-    Symbol1(Alphabet alphabet, int uniqueId, String uniqueName, Parameter<P1> param1) {
+    Symbol1(Alphabet<L> alphabet, int uniqueId, L uniqueName, Parameter<P1> param1) {
 	super(alphabet, uniqueId, uniqueName);
 	this.param1 = param1;
 	setParameters(param1);
     }
 
-    public Event createEvent(P1 obj1) {
+    public Symbol1(Alphabet<L> alphabet, int uniqueId, String uniqueName,
+			Parameter<P1> param1) {
+    	super(alphabet, uniqueId, uniqueName);
+    	this.param1 = param1;
+    	setParameters(param1);
+	}
+
+
+	public Event createEvent(P1 obj1) {
 	Object[] boundObjects = createObjectArray();
 	bindObject(this.param1, obj1, boundObjects);
 	return new Event(this, boundObjects);

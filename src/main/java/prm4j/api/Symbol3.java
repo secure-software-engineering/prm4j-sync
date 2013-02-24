@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013 Mateusz Parzonka
+ * Copyright (c) 2012 Mateusz Parzonka, Eric Bodden
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,13 +10,13 @@
  */
 package prm4j.api;
 
-public class Symbol3<P1, P2, P3> extends Symbol {
+public class Symbol3<L, P1, P2, P3> extends Symbol<L> {
 
     private final Parameter<P1> param1;
     private final Parameter<P2> param2;
     private final Parameter<P3> param3;
 
-    public Symbol3(Alphabet alphabet, int uniqueId, String uniqueName, Parameter<P1> param1, Parameter<P2> param2,
+    public Symbol3(Alphabet<L> alphabet, int uniqueId, L uniqueName, Parameter<P1> param1, Parameter<P2> param2,
 	    Parameter<P3> param3) {
 	super(alphabet, uniqueId, uniqueName);
 	this.param1 = param1;
