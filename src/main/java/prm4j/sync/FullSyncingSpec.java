@@ -5,18 +5,18 @@ import com.google.common.collect.Multiset;
 import prm4j.api.fsm.*;
 import prm4j.api.*;
 /**
- * An {@link AbstractSyncingFSMMonitorSpec} that models the gap of events missed by the number
+ * An {@link AbstractSyncingSpec} that models the gap of events missed by the number
  * of missed events.
  */
 public class FullSyncingSpec<L>
-	extends DefaultSyncingFSMMonitorSpec<L, FullSyncingSpec<L>.FullAbstraction>{
+	extends DefaultSyncingSpec<L, FullSyncingSpec<L>.FullAbstraction>{
 		
 	/*public FullSyncingTemplate(OpenFSMMonitorTemplate<L> delegate) {
 		super(delegate);
 	}*/
 	
-	public FullSyncingSpec(L l, FSM fsm) {
-		super(l, fsm);
+	public FullSyncingSpec(FSMSpec<L> delegate) {
+		super(delegate);
 	}
 	
 	protected FullAbstraction abstraction(Multiset<Symbol<L>> symbols) {
@@ -25,7 +25,7 @@ public class FullSyncingSpec<L>
 	
 	public class FullAbstraction
 		//extends AbstractSyncingFSMMonitorTemplate<L,K,V,FullAbstraction>.SymbolMultisetAbstraction {
-	extends AbstractSyncingFSMMonitorSpec<L, FullAbstraction>.SymbolMultisetAbstraction {
+	extends AbstractSyncingSpec<L, FullAbstraction>.SymbolMultisetAbstraction {
 
 		private final boolean skippedSomething;
 

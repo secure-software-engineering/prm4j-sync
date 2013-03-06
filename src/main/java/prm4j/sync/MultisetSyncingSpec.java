@@ -6,25 +6,22 @@ import com.google.common.collect.Multiset;
 import prm4j.api.fsm.*;
 import prm4j.api.*;
 /**
- * An {@link AbstractSyncingFSMMonitorSpec} that models the gap of events missed as a multiset of missed events.
+ * An {@link AbstractSyncingSpec} that models the gap of events missed as a multiset of missed events.
  */
 public class MultisetSyncingSpec<L>
-	extends DefaultSyncingFSMMonitorSpec<L, MultisetSyncingSpec<L>.AbstractionAsMultiset>{
+	extends DefaultSyncingSpec<L, MultisetSyncingSpec<L>.AbstractionAsMultiset>{
 		
-	/*public MultisetSyncingTemplate(OpenFSMMonitorTemplate<L, K, V> delegate) {
+	public MultisetSyncingSpec(FSMSpec<L> delegate) {
 		super(delegate);
-	}*/
-	
-	public MultisetSyncingSpec(L l, FSM fsm) {
-		super(l, fsm);
 	}
+	
 	
 	protected AbstractionAsMultiset abstraction(Multiset<Symbol<L>> symbols) {
 		return new AbstractionAsMultiset(symbols);
 	}
 
 	public class AbstractionAsMultiset
-		extends AbstractSyncingFSMMonitorSpec<L, AbstractionAsMultiset>.SymbolMultisetAbstraction {
+		extends AbstractSyncingSpec<L, AbstractionAsMultiset>.SymbolMultisetAbstraction {
 
 		private final Multiset<Symbol<L>> symbols;
 

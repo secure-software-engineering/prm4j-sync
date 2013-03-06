@@ -6,18 +6,18 @@ import prm4j.api.fsm.*;
 import prm4j.api.*;
 
 /**
- * An {@link AbstractSyncingFSMMonitorSpec} that models the gap of events missed by the number
+ * An {@link AbstractSyncingSpec} that models the gap of events missed by the number
  * of missed events.
  */
 public class NumberSyncingSpec<L>
-	extends DefaultSyncingFSMMonitorSpec<L, NumberSyncingSpec<L>.AbstractionBySize>{
+	extends DefaultSyncingSpec<L, NumberSyncingSpec<L>.AbstractionBySize>{
 		
 	/*public NumberSyncingTemplate(OpenFSMMonitorTemplate<L, K, V> delegate) {
 		super(delegate);
 	}*/
 	
-	public NumberSyncingSpec(L l, FSM fsm) {
-		super(l, fsm);
+	public NumberSyncingSpec(FSMSpec<L> delegate) {
+		super(delegate);
 	}
 	
 	protected AbstractionBySize abstraction(Multiset<Symbol<L>> symbols) {
@@ -25,7 +25,7 @@ public class NumberSyncingSpec<L>
 	}
 
 	public class AbstractionBySize
-		extends AbstractSyncingFSMMonitorSpec<L,AbstractionBySize>.SymbolMultisetAbstraction {
+		extends AbstractSyncingSpec<L,AbstractionBySize>.SymbolMultisetAbstraction {
 
 		private final int size;
 

@@ -5,11 +5,15 @@ import java.util.Set;
 
 import prm4j.api.fsm.*;
 import prm4j.api.*;
-public abstract class DefaultSyncingFSMMonitorSpec<L, A extends AbstractSyncingFSMMonitorSpec<L, A>.SymbolMultisetAbstraction> extends AbstractSyncingFSMMonitorSpec<L, A> {
+public abstract class DefaultSyncingSpec<L, A extends AbstractSyncingSpec<L, A>.SymbolMultisetAbstraction> extends AbstractSyncingSpec<L, A> {
 
 	//public DefaultSyncingFSMMonitorTemplate(AbstractSyncingFSMMonitorTemplate<L, A> delegate)
-	public DefaultSyncingFSMMonitorSpec(L l, FSM fsm){
-		super(l, fsm);
+	/*public DefaultSyncingSpec(FSM fsm){
+		super(fsm);
+	}*/
+	
+	public DefaultSyncingSpec(FSMSpec<L> delegate){
+		super(delegate);
 	}
 
 	@Override
@@ -19,11 +23,10 @@ public abstract class DefaultSyncingFSMMonitorSpec<L, A extends AbstractSyncingF
 
 	@Override
 	protected double samplingRate() {
-		return 0.2d;
+		return 0.5d;
 	}
 
 	@Override
-	//protected Set<ISymbol<L, K>> criticalSymbols() {
 	protected Set<Symbol<L>> criticalSymbols() {
 		return Collections.emptySet();
 	}

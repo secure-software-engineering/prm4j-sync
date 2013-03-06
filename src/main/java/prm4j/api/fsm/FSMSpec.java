@@ -15,30 +15,41 @@ import static java.util.Collections.unmodifiableSet;
 import java.util.HashSet;
 import java.util.Set;
 
+
+import prm4j.api.Alphabet;
 import prm4j.api.BaseEvent;
 import prm4j.api.Parameter;
+import prm4j.api.Symbol;
 import prm4j.indexing.Monitor;
 import prm4j.indexing.BaseMonitorState;
 import prm4j.indexing.realtime.StatefulMonitor;
 import prm4j.spec.FiniteSpec;
 
-public class FSMSpec implements FiniteSpec {
+public class FSMSpec<L> implements FiniteSpec {
 
-    protected final Set<BaseEvent> baseEvents;
-    protected final Set<Parameter<?>> parameters;
-    protected final Set<BaseMonitorState> states;
+	protected Alphabet<L> alphabet; // Rahul
+	protected Set<BaseEvent> baseEvents;
+    protected Set<Parameter<?>> parameters;
+    protected Set<BaseMonitorState> states;
     protected BaseMonitorState initialState;
 
-    public FSMSpec(FSM fsm) {
+    public FSMSpec(FSM<L> fsm) {
 	baseEvents = unmodifiableSet(new HashSet<BaseEvent>(fsm.getAlphabet().getSymbols()));
 	parameters = unmodifiableSet(fsm.getAlphabet().getParameters());
 	states = unmodifiableSet(new HashSet<BaseMonitorState>(fsm.getStates()));
 	initialState = fsm.getInitialState();
+	alphabet = fsm.getAlphabet(); // Rahul
     }
-
+    
+    public FSMSpec(FSMSpec fs) {	// Rahul
+    	baseEvents = fs.getBaseEvents();
+    	parameters = fs.getFullParameterSet();
+    	states = fs.getStates();
+    }
+    
     @Override
     public Set<BaseEvent> getBaseEvents() {
-	return baseEvents;
+    return baseEvents;
     }
 
     @Override
@@ -60,5 +71,13 @@ public class FSMSpec implements FiniteSpec {
     public Set<Parameter<?>> getFullParameterSet() {
 	return parameters;
     }
+    
+	public Alphabet<L> getAlphabet() { // Rahul
+		return alphabet;
+	}
+	
+	public Symbol<L> getSymbolByLabel(L label) { // Rahul
+		return alphabet.getSymbolByLabel(label);
+	}
 
 }

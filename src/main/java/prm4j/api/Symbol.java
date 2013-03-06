@@ -82,7 +82,8 @@ public abstract class Symbol <L> implements BaseEvent { // Rahul
      * @param object
      * @param boundObjects
      */
-    protected static <P> void bindObject(Parameter<P> parameter, P object, Object[] boundObjects) {
+    //protected static <P> void bindObject(Parameter<P> parameter, P object, Object[] boundObjects) {
+    public static <P> void bindObject(Parameter<P> parameter, P object, Object[] boundObjects) { // Rahul
 	assert boundObjects[parameter.getIndex()] == null : "Each parameter can be bound only once.";
 	boundObjects[parameter.getIndex()] = object;
     }

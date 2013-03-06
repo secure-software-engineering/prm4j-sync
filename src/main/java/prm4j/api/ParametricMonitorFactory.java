@@ -43,7 +43,6 @@ public class ParametricMonitorFactory {
 	final NodeManager nodeManager = new NodeManager();
 	final NodeStore nodeStore = new DefaultNodeStore(converter.getMetaTree(), nodeManager);
 	final Monitor prototypeMonitor = finiteSpec.getInitialMonitor();
-
 	final ParametricMonitor parametricMonitor = new DefaultParametricMonitor(bindingStore, nodeStore,
 		prototypeMonitor, converter.getEventContext(), nodeManager, false);
 

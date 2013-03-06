@@ -11,6 +11,8 @@
 package prm4j.indexing.staticdata;
 
 import prm4j.api.BaseEvent;
+import prm4j.api.Symbol;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public class EventContext {
 

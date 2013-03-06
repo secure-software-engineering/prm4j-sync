@@ -10,22 +10,28 @@
  */
 package prm4j.api;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 
 /**
  * TODO implement auto-naming.
  */
-//public class Alphabet { Rahul
+
 public class Alphabet<L> implements Iterable<Symbol<L>>{
 
     private int symbolCount = 0;
     private int parameterCount = 0;
     private final Set<Parameter<?>> parameters;
-    //private final Set<Symbol> symbols;
     private final Set<Symbol<L>> symbols;	//Rahul
+    
+    private Set<Symbol<L>> backingSet = new HashSet<Symbol<L>>(); // Rahul
+    private Map<L,Symbol<L>> labelToSymbol = new HashMap<L,Symbol<L>>(); // Rahul
     
     
 
@@ -46,11 +52,34 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 				return sym;
 			}
 		}
+		/////////////////////////// Rahul added this
+		if(l instanceof AbstractionAndSymbol){
+			Symbol<L> sym = labelToSymbol.get(l);
+			if(sym==null) {
+				Set<Parameter<?>> params = ((AbstractionAndSymbol)l).getSymbol().getParameters();
+				if(params.size() == 0){
+					sym = createSymbol0(l);
+				} else if (params.size() == 1){
+					Iterator <Parameter<?>> it = params.iterator();
+					Parameter<?> param1 = it.next();
+					sym = createSymbol1(l,param1);
+				} else if (params.size() == 2){
+					Iterator <Parameter<?>> it = params.iterator();
+					Parameter<?> param1 = it.next();
+					Parameter<?> param2 = it.next();
+					sym = createSymbol2(l,param1, param2);
+				}
+				backingSet.add(sym);
+				labelToSymbol.put(l, sym);
+				
+			}
+			return sym;
+		}
+		////////////////////////////
 		throw new IllegalArgumentException("Unknown symbol:" +l);
 	}
 
- 
-    
+	
 
     /**
      * Creates a parameter of type {@link Object}.
@@ -187,10 +216,6 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 	return symbol;
     }
 
-/*    public Set<Symbol> getSymbols() { // Rahul
-	return symbols;
-    }
-    */
     
     public Set<Symbol<L>> getSymbols() { // Rahul
 	return symbols;
@@ -207,5 +232,14 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
     public int getParameterCount() {
 	return parameterCount;
     }
+
+	/*public BaseEvent getSymbolByLabel(AbstractionAndSymbol abstractionAndSymbol) {
+		for (Symbol<L> sym : this) {
+			if(sym.getLabel().equals(abstractionAndSymbol)) {
+				return sym;
+			}
+		}
+		throw new IllegalArgumentException("Unknown symbol:" + abstractionAndSymbol);
+	}*/
 
 }

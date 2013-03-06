@@ -15,6 +15,7 @@ import prm4j.api.BaseEvent;
 import prm4j.api.Event;
 import prm4j.api.MatchHandler;
 import prm4j.api.ParametricMonitor;
+import prm4j.api.Symbol;
 import prm4j.indexing.Monitor;
 import prm4j.indexing.staticdata.ChainData;
 import prm4j.indexing.staticdata.EventContext;
@@ -78,6 +79,8 @@ public class DefaultParametricMonitor implements ParametricMonitor {
     public synchronized void processEvent(Event event) {
 
 	final BaseEvent baseEvent = event.getBaseEvent();
+	
+	//System.out.println("Symbol is: "+ ((Symbol)(baseEvent)).getLabel());
 
 	// wait for a creation event to activate monitoring
 	if (!monitorActivated) {

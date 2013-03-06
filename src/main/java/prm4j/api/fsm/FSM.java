@@ -20,17 +20,17 @@ import prm4j.api.MatchHandler;
 /**
  * A finite state automaton.
  */
-public class FSM {
+public class FSM<L> {
 
-    private final Alphabet alphabet;
-    private final Set<FSMState> states;
+    private final Alphabet<L> alphabet;
+    private final Set<FSMState<L>> states;
     private final Set<String> usedNames;
     private int stateCount = 0;
-    private FSMState initialState;
+    private FSMState<L> initialState;
 
-    public FSM(Alphabet alphabet) {
+    public FSM(Alphabet<L> alphabet) {
 	this.alphabet = alphabet;
-	states = new HashSet<FSMState>();
+	states = new HashSet<FSMState<L>>();
 	usedNames = new HashSet<String>();
     }
 
@@ -39,7 +39,7 @@ public class FSM {
      *
      * @return the created state
      */
-    public FSMState createInitialState() {
+    public FSMState<L> createInitialState() {
 	if (initialState != null)
 	    throw new IllegalStateException("Initial state already created!");
 	initialState = createState("initial");
@@ -51,7 +51,7 @@ public class FSM {
      *
      * @return the created state
      */
-    public FSMState createState() {
+    public FSMState<L> createState() {
 	return createState(generateStateName());
     }
 
@@ -60,7 +60,7 @@ public class FSM {
      *
      * @return the created state
      */
-    public FSMState createState(String optionalName) {
+    public FSMState<L> createState(String optionalName) {
 	return createState(false, null, optionalName);
     }
 
@@ -69,7 +69,7 @@ public class FSM {
      *
      * @return the created accepting state
      */
-    public FSMState createAcceptingState(MatchHandler matchHandler) {
+    public FSMState<L> createAcceptingState(MatchHandler matchHandler) {
 	return createAcceptingState(matchHandler, generateAcceptingStateName());
     }
 
@@ -78,7 +78,7 @@ public class FSM {
      *
      * @return the created accepting state
      */
-    public FSMState createAcceptingState(MatchHandler matchHandler, String optionalName) {
+    public FSMState<L> createAcceptingState(MatchHandler matchHandler, String optionalName) {
 	if (matchHandler == null) {
 	    throw new NullPointerException("MatchHandler may not be null!");
 	}
@@ -93,11 +93,11 @@ public class FSM {
 	return "state " + stateCount + " (accepting)";
     }
 
-    private FSMState createState(boolean isAccepting, MatchHandler eventHandler, String name) {
+    private FSMState<L> createState(boolean isAccepting, MatchHandler eventHandler, String name) {
 	if (usedNames.contains(name))
 	    throw new IllegalArgumentException("The name [" + name + "] has already been used!");
 	usedNames.add(name);
-	FSMState state = new FSMState(stateCount++, alphabet, isAccepting, eventHandler, name);
+	FSMState<L> state = new FSMState<L>(stateCount++, alphabet, isAccepting, eventHandler, name);
 	states.add(state);
 	return state;
     }
@@ -107,7 +107,7 @@ public class FSM {
      *
      * @return the alphabet
      */
-    public Alphabet getAlphabet() {
+    public Alphabet<L> getAlphabet() {
 	return alphabet;
     }
 
@@ -116,7 +116,7 @@ public class FSM {
      *
      * @return an unmodifiable set of created states
      */
-    public Set<FSMState> getStates() {
+    public Set<FSMState<L>> getStates() {
 	return states;
     }
 
@@ -143,7 +143,7 @@ public class FSM {
      *
      * @return the initial state
      */
-    public FSMState getInitialState() {
+    public FSMState<L> getInitialState() {
 	if (initialState == null)
 	    throw new IllegalStateException("No initial state created!");
 	return initialState;

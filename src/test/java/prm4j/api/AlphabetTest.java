@@ -18,6 +18,7 @@ import java.util.Iterator;
 import org.junit.Test;
 
 import prm4j.AbstractTest;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 
 public class AlphabetTest extends AbstractTest {
@@ -29,9 +30,9 @@ public class AlphabetTest extends AbstractTest {
 
 	final Parameter<Collection> c = alphabet.createParameter(Collection.class);
 	final Parameter<Iterator> i = alphabet.createParameter(Iterator.class);
-	final Symbol1<Collection> updateColl = alphabet.createSymbol1(c);
-	final Symbol2<Collection, Iterator> createIter = alphabet.createSymbol2(c, i);
-	final Symbol1<Iterator> updateIter = alphabet.createSymbol1(i);
+	final Symbol1<AbstractionAndSymbol, Collection> updateColl = alphabet.createSymbol1(c);
+	final Symbol2<AbstractionAndSymbol, Collection, Iterator> createIter = alphabet.createSymbol2(c, i);
+	final Symbol1<AbstractionAndSymbol, Iterator> updateIter = alphabet.createSymbol1(i);
 
 	assertEquals(0, updateColl.getIndex());
 	assertEquals(1, updateColl.getParameterCount());

@@ -19,7 +19,7 @@ import prm4j.indexing.Monitor;
  */
 public class Event {
 
-    private final BaseEvent baseEvent;
+    private BaseEvent baseEvent;  // Rahul
     private final Object[] boundObjects;
     private final Object auxiliaryData;
     private final Condition condition;
@@ -34,6 +34,10 @@ public class Event {
 	this.auxiliaryData = auxiliaryData;
 	this.condition = condition;
     }
+    
+    public void setBaseEvent(BaseEvent baseEvent) {  // Rahul
+    	this.baseEvent = baseEvent;
+        }
 
     public BaseEvent getEvaluatedBaseEvent(Monitor baseMonitor) {
 	if (condition == null) {

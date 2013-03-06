@@ -1,6 +1,6 @@
 package prm4j.sync;
 
-import static java.util.Collections.unmodifiableSet;
+//import static java.util.Collections.unmodifiableSet;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,10 +19,9 @@ import com.google.common.collect.Multiset;
 
 import prm4j.api.fsm.*;
 import prm4j.api.*;
-import prm4j.spec.*;
 import prm4j.indexing.BaseMonitorState;
+import prm4j.indexing.Monitor;
 import prm4j.indexing.realtime.BaseMonitor;
-import prm4j.indexing.realtime.DefaultParametricMonitor;
 import prm4j.indexing.realtime.StatefulMonitor;
 
 /**
@@ -49,12 +48,15 @@ import prm4j.indexing.realtime.StatefulMonitor;
  *            information must not contain any information about the order of skipped events, i.e.,
  *            abstraction(a b)=abstraction(b a) must hold for all events a,b.
  */
-public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncingFSMMonitorSpec<L, A>.SymbolMultisetAbstraction> extends FSMSpec
-//extends OpenFSMMonitorTemplate<AbstractSyncingFSMMonitorTemplate<L,K,V,A>.AbstractionAndSymbol, K, V>{
-{
-    protected Alphabet<L> alphabet;	// Rahul
+public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>.SymbolMultisetAbstraction> extends FSMSpec
+<AbstractSyncingSpec<L,A>.AbstractionAndSymbol> {
+    //protected Alphabet<L> alphabet;	// Rahul
     protected int nextStateNum = 0; // Rahul
-	
+    
+    protected final FSMSpec<L> delegate;
+    
+    
+    final ParametricMonitor parametricMonitor; 
 	
 	/**
 	 * The empty multi-set of symbols.
@@ -65,7 +67,6 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	/**
 	 * The monitor template this syncing monitor template is based on.
 	 */
-	//protected final OpenFSMMonitorTemplate<L,K, V> delegate;
 	
 	/**
 	 * A mapping from states sets of the delegate to a compound state of this monitor template that represents
@@ -88,8 +89,6 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	/**
 	 * The intersection of the variable bindings of skipped events.
 	 */
-	// Is it required?
-	//protected IVariableBinding<K, V> intersectionOfSkippedBindings = new VariableBinding<K, V>();
 	
 	/**
 	 * The number of times we reenabled monitoring.
@@ -102,18 +101,13 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	protected boolean didMonitorLastEvent = true;
 	
 	
-	// Is it reuired?
-	//@SuppressWarnings("serial")
-	/*protected final IVariableBinding<K, V> INCOMPATIBLE_BINDING = new VariableBinding<K, V>() {
-		public boolean isCompatibleWith(IVariableBinding<K,V> other) { return false; };
-	};*/
 	
 	/**
 	 * We use this random source to produce coin flips that tell us whether to turn sampling
 	 * on or off during any given sampling period. We use a deterministic seed for
 	 * reproducibility. 
 	 */
-	protected final Random random = new Random(0L);
+	protected final Random random = new Random(10);
 	
 	/**
 	 * The length of any sampling period.
@@ -141,59 +135,56 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	 * @param delegate The monitor template this syncing monitor template is based on. The template will remain unmodified.
 	 * @param max The maximal number of skipped events.
 	 */
-	//public AbstractSyncingFSMMonitorTemplate(OpenFSMMonitorTemplate<L, K, V> delegate) {
-	public AbstractSyncingFSMMonitorSpec(L l, FSM fsm) 	{
-		super(fsm);
+	public AbstractSyncingSpec(FSMSpec<L> delegate) 	{
+		super(delegate);
+		this.delegate = delegate;
 		this.samplingPeriod = samplingPeriod();
 		this.skipPeriod = (int) (1.0d/samplingRate() - 1) * samplingPeriod; 
 		this.criticalSymbols = criticalSymbols();
-		alphabet = fsm.getAlphabet();	// Rahul
+		this.alphabet = createAlphabet();	// Rahul
 		this.initialState = setupStatesAndTransitions();
+		parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
 	}
 
-	
-	/*protected void initialize() {
-		alphabet = createAlphabet(); 
-		//emptyBinding = createEmptyBinding();
-		fillAlphabet(alphabet);
-		//indexingStrategy = createIndexingStrategy();
-		//initialized = true; // Don't think we need this
-	}*/
-    
-	public Symbol<L> getSymbolByLabel(L label) {
-		return alphabet.getSymbolByLabel(label);
-	}
-    
+	 
     public Set<BaseEvent> getBaseEvents() {
-	return baseEvents;
+    	return baseEvents;
     }
 
    
     public Set<BaseMonitorState> getStates() {
-	return states;
+    	return states;
     }
 
-    public BaseMonitorState getInitialState() { // Rahul
-    //public State<L> getInitialState() {
-	return initialState;
+    @SuppressWarnings("unchecked")
+	public FSMState<L> getInitialState() { // Rahul
+    	return (FSMState<L>)initialState;
     }
 
-    public BaseMonitor getInitialMonitor() {
-	return new StatefulMonitor(getInitialState());
+    @SuppressWarnings("unchecked")
+	public BaseMonitor getInitialMonitor() {
+    	return new SyncFSMMonitor((FSMState<AbstractionAndSymbol>) getInitialState());
     }
 
     public Set<Parameter<?>> getFullParameterSet() {
-	return parameters;
+    	return parameters;
     }
     
-	public Alphabet<L> getAlphabet() {	// Rahul
-		return alphabet;
+	/**
+	 * Subclasses may override this method to create a custom kind of alphabet. 
+	 */
+	protected Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol> createAlphabet() {		
+		return new Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol>();
 	}
 	
-	/*protected void fillAlphabet(Alphabet<L> alphabet) {
-		//alphabet is instead filled on demand
-	}*/
-
+	protected Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol> createAlphabetAndParameters(FSMSpec<L> delegate) {
+		Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol> a = new Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol>();
+		Iterator<Parameter<?>> it = delegate.getAlphabet().getParameters().iterator();
+		while(it.hasNext()){
+			a.addParameter(it.next());
+		}
+		return a;
+	}
 	
 	
 	
@@ -204,19 +195,14 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	 * states in this automaton), and one for multisets of skipped symbols. For each reachable state set
 	 * the algorithm computes all possible successor state sets under an expanded transition relation. This
 	 * transition relation takes into account the abstractions of all possible multisets of skipped events
-	 * up to {@link AbstractSyncingFSMMonitorSpec#MAX}. 
+	 * up to {@link AbstractSyncingSpec#MAX}. 
 	 */
 	
+	@SuppressWarnings("unchecked")
 	protected FSMState<AbstractionAndSymbol> setupStatesAndTransitions() {
-		//IAlphabet<L, K> alphabet = delegate.getAlphabet(); Rahul
-		//Alphabet<L> alphabet = delegate.getAlphabet();
-		Alphabet<L> alphabet = getAlphabet();
-
-		
+		Alphabet<L> alphabet = delegate.getAlphabet();		
 		Set<Set<FSMState<L>>> worklist = new HashSet<Set<FSMState<L>>>();
-		//worklist.add(Collections.singleton((FSMState<L>)delegate.getInitialState()));
-		worklist.add(Collections.singleton((FSMState<L>)getInitialState()));
-
+		worklist.add(Collections.singleton(((FSMState<L>)delegate.getInitialState())));
 		
 		Set<Set<FSMState<L>>> statesVisited = new HashSet<Set<FSMState<L>>>();		
 				
@@ -225,9 +211,11 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 			Iterator<Set<FSMState<L>>> iter = worklist.iterator();
 			Set<FSMState<L>> currentStates = iter.next();
 			iter.remove();
+
 			
 			//have visited current set of states; to terminate, don't visit again
 			statesVisited.add(currentStates);
+
 
 			//create a work list for abstractions of multisets of skipped symbols;
 			//starting with the abstraction of the empty multiset
@@ -262,13 +250,12 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 						if(succ!=null)
 							symSuccs.add(succ);
 					}
-					if(!symSuccs.isEmpty()) {						
+					if(!symSuccs.isEmpty()) {
 						boolean subsumed = transitionForSymbolAlreadyExists(currentStates,sym,symSuccs);
-						
-						
 						if(!subsumed) {
 							//create label for new transition: (abstraction,sym)
-							Symbol<AbstractionAndSymbol> compoundSymbol = (Symbol<AbstractionAndSymbol>)getSymbolByLabel((L)(new AbstractionAndSymbol(abstraction, sym)));
+							Symbol<AbstractionAndSymbol> compoundSymbol = getSymbolByLabel(new AbstractionAndSymbol(abstraction, sym));
+
 							//register possible target states under that transition
 							Set<FSMState<L>> newTargets = addTargetStatesToTransition(currentStates, compoundSymbol, symSuccs);
 							//register the new state set so that we can later-on add it to the worklist
@@ -301,21 +288,25 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 				
 		createTransitions();
 		
-		//return stateFor(Collections.singleton((FSMState<L>)delegate.getInitialState()));
-		return stateFor(Collections.singleton((FSMState<L>)getInitialState()));
+		//printStateSetToCompoundState();
+		
+		return stateFor(Collections.singleton(((FSMState<L>)delegate.getInitialState())));
 
 	}
 	
-	/*protected Alphabet<AbstractSyncingFSMMonitorTemplate<L,K,V,A>.AbstractionAndSymbol> createAlphabet() {
-		super.createAlphabet();
-		return new DynamicAlphabet<AbstractSyncingFSMMonitorTemplate<L,K,V,A>.AbstractionAndSymbol, K>();
-	}*/ // Is it really required? Check with Eric.
+	private void printStateSetToCompoundState(){
+		for(Set<FSMState<L>> states: stateSetToCompoundState.keySet()){
+			System.out.println("Key: " + states);
+			System.out.println("Value: " + stateSetToCompoundState.get(states));
+		}
+	}
 	
 	private boolean transitionForSymbolAlreadyExists(Set<FSMState<L>> currentStates, Symbol<L> symbol, Set<FSMState<L>> symSuccs) {
 		Map<Symbol<AbstractionAndSymbol>, Set<FSMState<L>>> symbolToTargets = transitions.get(currentStates);
 		if(symbolToTargets==null) return false;
 		for(Map.Entry<Symbol<AbstractionAndSymbol>, Set<FSMState<L>>> symbolAndTargets: symbolToTargets.entrySet()) {
 			Symbol<AbstractionAndSymbol> sym = symbolAndTargets.getKey();
+			
 			if(sym.getLabel().getSymbol().equals(symbol)) {
 				Set<FSMState<L>> targets = symbolAndTargets.getValue();
 				if(targets.equals(symSuccs)) { 
@@ -359,15 +350,15 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	private FSMState<AbstractionAndSymbol> stateFor(Set<FSMState<L>> set) {
 		FSMState<AbstractionAndSymbol> compoundState = stateSetToCompoundState.get(set);
 		if(compoundState==null) {
-			boolean isFinal = true;
+			boolean isAccepting = true;			
 			for (FSMState<L> state : set) {
-				if(!state.isFinal() ){ 
-					isFinal = false;
+				if(!state.isAccepting() ){ 
+					isAccepting = false;
 					break;
 				}
-			}			
-			compoundState = makeState(isFinal);
-			System.err.println(compoundState+" - "+set);
+			}		
+			compoundState = makeState(isAccepting);
+			System.err.println(compoundState+" - "+set + " "+ (compoundState.isAccepting()?"Accepting":"NonAccepting"));
 			stateSetToCompoundState.put(set, compoundState);
 		}
 		return compoundState;
@@ -377,16 +368,6 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 		return parameters;
 	}
 
-	/*@Override
-	protected IIndexingStrategy<AbstractionAndSymbol, K, V> createIndexingStrategy() {
-		//TODO can we somehow choose the strategy based on the one used for the delegate?
-		return new StrategyB<DefaultFSMMonitor<AbstractionAndSymbol>, AbstractionAndSymbol, K, V>(this); 
-	}*/ // Rahul: Not required?
-
-	//@Override
-	/*protected void fillAlphabet(Alphabet<AbstractionAndSymbol> alphabet) {
-		//alphabet is instead filled on demand
-	}*/ // Rahul: Not required?
 	
 	/**
 	 * Maybe processes the event consisting of the symbol and bindings.
@@ -395,14 +376,13 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	 * @param symbolLabel the current event's symbol's label
 	 * @param binding the current events's binding
 	 */
-	// public void maybeProcessEvent(L symbolLabel, IVariableBinding<K,V> binding) {
-	public void maybeProcessEvent(L symbolLabel, Event e) {
-		//Symbol<L> symbol = delegate.getAlphabet().getSymbolByLabel(symbolLabel);
-		Symbol<L> symbol = getAlphabet().getSymbolByLabel(symbolLabel);
-		//if(shouldMonitor(symbol,binding,skippedSymbols)) {
+	@SuppressWarnings("unchecked")
+	public void maybeProcessEvent(Event e) {
+		Symbol<L> symbol = (Symbol<L>)(e.getBaseEvent());
 		if(shouldMonitor(symbol)) {
 			if(!didMonitorLastEvent) reenableTime++;
-			processEvent((L)(new AbstractionAndSymbol(abstraction(skippedSymbols), symbol)), e);
+			e.setBaseEvent(getAlphabet().getSymbolByLabel(new AbstractionAndSymbol(abstraction(skippedSymbols), symbol)));
+			parametricMonitor.processEvent(e);
 			skippedSymbols.clear();
 			didMonitorLastEvent = true;
 		} else {
@@ -411,14 +391,7 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 		}
 	}
 	
-	/*public synchronized void processEvent(L label, Event e){
-		//assert alphabet.variables().containsAll(binding.keySet()):
-			//"Event has undefined variables: "+binding+" vs. "+alphabet;
-		//assert initialized : "not initialized!";
-		
-		getIndexingStrategy().processEvent(getSymbolByLabel(label), e);
-	}*/
-	
+
 	/**
 	 * Returns the lenght of a sampling period for this monitor template. This size may actually depend on the 
 	 * size or structure of the delegate, i.e., the property to be monitored.
@@ -443,10 +416,12 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	 * @param skippedSymbols the multiset of symbols of events skipped so far
 	 * @return 
 	 */
-	//protected boolean shouldMonitor(Symbol<L> symbol, IVariableBinding<K, V> binding, Multiset<ISymbol<L, K>> skippedSymbols) { // Rahul
+
 	protected boolean shouldMonitor(Symbol<L> symbol){ // Rahul changed it
+		Random random = new Random();
 		if(phase==0) {
 			processEventsInCurrentPeriod = random.nextBoolean();
+			System.out.println(processEventsInCurrentPeriod?"Should Monitor.":"Should not monitor.");
 		}
 		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
 		phase = (phase+1) % periodLength;
@@ -454,17 +429,17 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	}
 
 	
-	public class AbstractionAndSymbol {
+	public class AbstractionAndSymbol{
 		private final A abstraction;
-		private final Symbol symbol;
-		public AbstractionAndSymbol(A abstraction, Symbol symbol) {
+		private final Symbol<L> symbol;
+		public AbstractionAndSymbol(A abstraction, Symbol<L> symbol) {
 			this.abstraction = abstraction;
 			this.symbol = symbol;
 		}
 		public A getAbstraction() {
 			return abstraction;
 		}
-		public Symbol getSymbol() {
+		public Symbol<L> getSymbol() {
 			return symbol;
 		}
 		@Override
@@ -507,34 +482,24 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 	
 	//@Override
 	public SyncFSMMonitor createMonitorPrototype() {
-		return new SyncFSMMonitor((FSMState)getInitialState());
+		return new SyncFSMMonitor((FSMState<AbstractionAndSymbol>)getInitialState());
 	}
 	
-	/*@Override
-	public IVariableBinding<K, V> createEmptyBinding() {
-		return delegate.createEmptyBinding();
-	}*/ // Rahul: Not required?
 	
 	//@Override
-	protected FSMState<AbstractionAndSymbol> makeState(boolean isFinal) {
-		//return new SyncState(getAlphabet(),isFinal,Integer.toString(nextStateNum++));
+	protected SyncState makeState(boolean isFinal) {
 		return new SyncState((Alphabet<AbstractionAndSymbol>)getAlphabet(),isFinal, nextStateNum++);
 	}
 	
 	public class SyncState extends FSMState<AbstractionAndSymbol> {
 		
-		//Map<ISymbol<L, K>,A> symToMaxAbstraction = new HashMap<ISymbol<L, K>,A>(); //Rahul
 		Map<Symbol<L>,A> symToMaxAbstraction = new HashMap<Symbol<L>,A>();
-		//Map<ISymbol<L, K>,ISymbol<AbstractionAndSymbol, ?>> symToMaxSymbol = new HashMap<ISymbol<L, K>,ISymbol<AbstractionAndSymbol, ?>>(); // Rahul
 		Map<Symbol<L>,Symbol<AbstractionAndSymbol>> symToMaxSymbol = new HashMap<Symbol<L>,Symbol<AbstractionAndSymbol>>();
 
-		//public SyncState(IAlphabet<AbstractionAndSymbol, ?> alphabet, boolean isFinal, String label) { Rahul
-		public SyncState(Alphabet<AbstractionAndSymbol> alphabet, boolean isFinal, int label) {
-			//super(alphabet, isFinal, label);
-			super(label, alphabet, isFinal, null, Integer.toString(label));
+		public SyncState(Alphabet<AbstractionAndSymbol> alphabet, boolean isAccepting, int label) {
+			super(label, alphabet, isAccepting, null, Integer.toString(label));
 		}
 		
-		//@Override Rahul
 		public FSMState<AbstractionAndSymbol> successor(Symbol<AbstractionAndSymbol> sym) {
 			A max = symToMaxAbstraction.get(sym.getLabel().getSymbol());
 			if(max!=null && max.isSmallerOrEqualThan(sym.getLabel().getAbstraction())) {
@@ -544,41 +509,45 @@ public abstract class AbstractSyncingFSMMonitorSpec<L, A extends AbstractSyncing
 		}
 		
 		@Override //Rahul
-		//public void addTransition(ISymbol<AbstractionAndSymbol, ?> sym, State<AbstractionAndSymbol> succ) { // Rahul
 		public void addTransition(Symbol<AbstractionAndSymbol> sym, FSMState<AbstractionAndSymbol> succ) {
 			super.addTransition(sym, succ);
 			A abstraction = sym.getLabel().getAbstraction();
-			//ISymbol<L, K> symbol = sym.getLabel().getSymbol(); //Rahul
 			Symbol<L> symbol = sym.getLabel().getSymbol();
 			symToMaxAbstraction.put(symbol,abstraction);
-			symToMaxSymbol.put(symbol,(Symbol<AbstractionAndSymbol>)getAlphabet().getSymbolByLabel((L) new AbstractionAndSymbol(abstraction, sym.getLabel().getSymbol())));
+			symToMaxSymbol.put(symbol,getAlphabet().getSymbolByLabel(new AbstractionAndSymbol(abstraction, sym.getLabel().getSymbol())));
 		}
 		
 	}
 
-	public class SyncFSMMonitor<L> extends DefaultParametricMonitor {
+	public class SyncFSMMonitor extends StatefulMonitor {
 
 		protected long lastAccess;
-		protected FSMState<L> currentState;
 		
-		public SyncFSMMonitor(FSMState<L> initialState) {
+		public SyncFSMMonitor(FSMState<AbstractionAndSymbol> initialState) {
 			super(initialState);
-			this.currentState = initialState;
+			this.state = initialState;
 		}
 		
-		public void processEvent(Event e) {
+		
+		@SuppressWarnings("unchecked")
+		public boolean processEvent(Event e) {
 			//as input we get a syncing symbol; now we must check whether we actually need
 			//to sync; if not, then we modify the symbol to a non-syncing one
 			
 			if(reenableTime==lastAccess) {
 				//don't sync
-				s = getAlphabet().getSymbolByLabel((L)new AbstractionAndSymbol(abstraction(EMPTY), s.getLabel().getSymbol()));
+				e.setBaseEvent(getAlphabet().getSymbolByLabel((new AbstractionAndSymbol(abstraction(EMPTY), ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol()))));
 			} else {
 				lastAccess = reenableTime;
 			}
 						
-			super.processEvent(e);
+			return super.processEvent(e);
 		}
+		
+	    @Override
+	    public Monitor copy() {
+		return new SyncFSMMonitor((FSMState)super.state);
+	    }
 	}
 
 	public abstract class SymbolMultisetAbstraction {		
