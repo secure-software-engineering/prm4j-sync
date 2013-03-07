@@ -47,6 +47,7 @@ public class FSMState <L> extends BaseMonitorState {
 
     @Override
     public BaseMonitorState getSuccessor(BaseEvent baseEvent) {
+    	System.out.println("Entered FSMState's getSuccessor");
 	return successorTable[baseEvent.getIndex()];
     }
 

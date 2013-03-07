@@ -39,9 +39,12 @@ public class StatefulMonitor extends BaseMonitor {
 	    // the condition evaluated to false, no transition is taken, monitor was alive => stays alive
 	    return true;
 	}
-	System.out.println("From State: " + state.getIndex());
+	BaseMonitorState oldState = state;
+	System.out.println("Type of state in transitioning is " + state.getClass().getName());
+	System.out.println("Type of baseEvent in transitioning is " + baseEvent.getClass().getName());
+	System.out.println("From " + state.getIndex());
 	state = state.getSuccessor(baseEvent);
-	System.out.println("To State: " + state.getIndex());
+	System.out.println("To " + state.getIndex());
 	if (state == null) {
 	    terminate();
 	    return false;
@@ -52,7 +55,7 @@ public class StatefulMonitor extends BaseMonitor {
 	    // when a state is a accepting state, it is still possible we will reach another accepting state (or loop on
 	    // an accepting state)
 	}
-	if(state.isAccepting()){
+	if(state.isAccepting() && !oldState.isAccepting()){
 		System.out.println("Moved to the error state!");
 	}
 	if (state.isFinal()

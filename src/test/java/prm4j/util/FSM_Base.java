@@ -11,6 +11,8 @@
 package prm4j.util;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import prm4j.api.Alphabet;
 import prm4j.api.MatchHandler;
@@ -24,4 +26,6 @@ public interface FSM_Base {
 
 	public FSM getFSM();
 	public Alphabet getAlphabet();
+	public List<Parameter<?>> getParameterOrder(String label);
+	public int getTotalParams();
 }

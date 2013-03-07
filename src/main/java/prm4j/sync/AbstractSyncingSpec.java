@@ -418,14 +418,15 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 */
 
 	protected boolean shouldMonitor(Symbol<L> symbol){ // Rahul changed it
-		Random random = new Random();
+		/*Random random = new Random();
 		if(phase==0) {
 			processEventsInCurrentPeriod = random.nextBoolean();
 			System.out.println(processEventsInCurrentPeriod?"Should Monitor.":"Should not monitor.");
 		}
 		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
 		phase = (phase+1) % periodLength;
-		return processEventsInCurrentPeriod || criticalSymbols.contains(symbol);
+		return processEventsInCurrentPeriod || criticalSymbols.contains(symbol);*/
+		return true;
 	}
 
 	
@@ -500,8 +501,12 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 			super(label, alphabet, isAccepting, null, Integer.toString(label));
 		}
 		
-		public FSMState<AbstractionAndSymbol> successor(Symbol<AbstractionAndSymbol> sym) {
+		public FSMState<AbstractionAndSymbol> getSuccessor(Symbol<AbstractionAndSymbol> sym) {
 			A max = symToMaxAbstraction.get(sym.getLabel().getSymbol());
+			if(max != null)
+				System.out.println("Visited isSmallerOrEqualThan");
+			else
+				System.out.println("max is null");
 			if(max!=null && max.isSmallerOrEqualThan(sym.getLabel().getAbstraction())) {
 				sym = symToMaxSymbol.get(sym.getLabel().getSymbol());
 			}

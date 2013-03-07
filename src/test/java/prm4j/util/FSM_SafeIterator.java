@@ -11,11 +11,16 @@
 package prm4j.util;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import prm4j.api.Alphabet;
 import prm4j.api.MatchHandler;
 import prm4j.api.Parameter;
+import prm4j.api.Symbol;
 import prm4j.api.Symbol1;
 import prm4j.api.Symbol2;
 import prm4j.api.fsm.FSM;
@@ -42,6 +47,14 @@ public class FSM_SafeIterator implements FSM_Base{
     public final FSMState s2 = fsm.createState();
     public final FSMState s3 = fsm.createState();
     public final FSMState error = fsm.createAcceptingState(matchHandler);
+    
+    
+    public Map<String, List<Parameter<?>>> order = new HashMap<String, List<Parameter<?>>>();
+    
+    public final int totParams = 2;
+    
+
+    
 
     public FSM_SafeIterator() {
 	initial.addTransition(updateColl, initial);
@@ -50,6 +63,24 @@ public class FSM_SafeIterator implements FSM_Base{
 	s1.addTransition(updateColl, s2);
 	s2.addTransition(updateColl, s2);
 	s2.addTransition(useIter, error);
+	
+	
+	
+	
+    List<Parameter<?>> lc = new LinkedList<Parameter<?>>();
+    lc.add(c);
+    lc.add(i);
+    order.put("create", lc);
+    
+    List<Parameter<?>> lu = new LinkedList<Parameter<?>>();
+    lu.add(c);
+    order.put("update", lu);
+    
+    List<Parameter<?>> ln = new LinkedList<Parameter<?>>();
+    ln.add(i);
+    order.put("next", ln);
+   
+   
     }
     
 	public FSM getFSM(){
@@ -58,5 +89,13 @@ public class FSM_SafeIterator implements FSM_Base{
 	
 	public Alphabet getAlphabet(){
 		return alphabet;
+	}
+	
+	public List<Parameter<?>> getParameterOrder(String label){
+		return order.get(label);
+	}
+	
+	public int getTotalParams(){
+		return totParams;
 	}
 }

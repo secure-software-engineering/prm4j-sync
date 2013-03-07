@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 //import org.junit.Before;
@@ -46,11 +48,6 @@ public class TraceReader {
 		String propName = args[2];
 		
 		FSM_Base fsm_base;
-		FSM_HasNext fsm_hn;
-		FSM_SafeIterator fsm_fsi;
-	    FiniteParametricProperty fpp;
-	    FSM<String> fsm;
-	   
 		
 		AbstractSyncingSpec<String, ?> syncingSpec = null;
 		if(propName.equals("hasnext")) {
@@ -77,12 +74,10 @@ public class TraceReader {
 			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM()));
 		} else if(abstName.contentEquals("numsym")) {			
 			syncingSpec = new NumberAndSymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM()));
-		}else {
+		} else {
 			throw new IllegalArgumentException("invalid abstraction: "+abstName);
 		}
 		
-		fpp = new FiniteParametricProperty(syncingSpec);
-
 		Set<String> symbols = new HashSet<String>();		
 		for (Symbol<String> sym: (Set<Symbol<String>>)fsm_base.getAlphabet().getSymbols()) {
 			symbols.add(sym.getLabel());
@@ -107,21 +102,29 @@ public class TraceReader {
 			
 			String symbolName = split[0];
 			Symbol<String> symbol = fsm_base.getAlphabet().getSymbolByLabel(symbolName);
-			//String[] variableOrder = symbol.getVariables();
 
-			Object[] parameterValues = new Object[split.length];
-			Event e = new Event(symbol, parameterValues);
+			Object[] parameterValues = new Object[fsm_base.getTotalParams()];
+			
+			System.out.println("Total params: " + fsm_base.getTotalParams());
 			
 			Set<Parameter<?>> params = symbol.getParameters();
-			
-			for(int i=0; i<split.length-1; i++) {
-				Long objectID = Long.parseLong(split[i+1]);
-				System.out.println("objectID: " + objectID);
-				Parameter<Long> param = getParam(params, i);
-				System.out.println("param: " + param);
-				symbol.bindObject(param, objectID, e.getBoundObjects());
+			Iterator<Parameter<?>> it = params.iterator();
+			while(it.hasNext()){
+				Parameter param = it.next();
+				System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index");
+				int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);				
+				parameterValues[param.getIndex()] = Long.parseLong(split[trInd +1]);				
 			}
+						
+			System.out.println("Creating Event: " + symbol.getLabel() + " with " + parameterValues[0] + " " + parameterValues[parameterValues.length - 1]);
+			Event e = new Event(symbol, parameterValues);
 			
+			/*it = params.iterator();
+			while(it.hasNext()){
+				Parameter param = it.next();
+				symbol.bindObject(param, parameterValues[param.getIndex()], e.getBoundObjects());
+			}*/
+						
 			syncingSpec.maybeProcessEvent(e);
 		}
 	
