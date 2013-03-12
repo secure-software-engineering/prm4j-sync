@@ -14,8 +14,13 @@ import prm4j.Globals;
 import prm4j.api.BaseEvent;
 import prm4j.api.Event;
 import prm4j.api.MatchHandler;
+import prm4j.api.Symbol;
+import prm4j.api.fsm.FSMState;
 import prm4j.indexing.BaseMonitorState;
 import prm4j.indexing.Monitor;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
+import prm4j.sync.AbstractSyncingSpec.SyncFSMMonitor;
+import prm4j.sync.AbstractSyncingSpec.SyncState;
 
 /**
  * A base monitor holding a {@link BaseMonitorState} which is updated when processing {@link BaseEvent}s.
@@ -30,20 +35,28 @@ public class StatefulMonitor extends BaseMonitor {
 
     @Override
     public boolean processEvent(Event event) {
+    //System.out.println("Type of this monitor is " + this.getClass().getName());
 	if (state == null) {
 	    terminate();
 	    return false;
 	}
 	final BaseEvent baseEvent = event.getEvaluatedBaseEvent(this);
+	//final Symbol baseEvent = (Symbol)event.getEvaluatedBaseEvent(this);	//Rahul
 	if (baseEvent == null) {
 	    // the condition evaluated to false, no transition is taken, monitor was alive => stays alive
 	    return true;
 	}
 	BaseMonitorState oldState = state;
-	System.out.println("Type of state in transitioning is " + state.getClass().getName());
-	System.out.println("Type of baseEvent in transitioning is " + baseEvent.getClass().getName());
 	System.out.println("From " + state.getIndex());
+	///////////
+	if(this instanceof SyncFSMMonitor){	// Rahul changed this part
+		Symbol<AbstractionAndSymbol> sym = (Symbol<AbstractionAndSymbol>)baseEvent;
+		SyncState syncState = (SyncState)state;
+		state = syncState.getSuccessor(sym);
+	} else {
 	state = state.getSuccessor(baseEvent);
+	}
+	//////////
 	System.out.println("To " + state.getIndex());
 	if (state == null) {
 	    terminate();

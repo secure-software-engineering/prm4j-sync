@@ -16,6 +16,7 @@ import prm4j.api.BaseEvent;
 import prm4j.api.MatchHandler;
 import prm4j.api.Symbol;
 import prm4j.indexing.BaseMonitorState;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public class FSMState <L> extends BaseMonitorState {
 
@@ -45,11 +46,11 @@ public class FSMState <L> extends BaseMonitorState {
 	isFinal = false;
     }
 
-    @Override
-    public BaseMonitorState getSuccessor(BaseEvent baseEvent) {
-    	System.out.println("Entered FSMState's getSuccessor");
+   public BaseMonitorState getSuccessor(BaseEvent baseEvent) {
+    	//System.out.println("Entered FSMState's getSuccessor");
 	return successorTable[baseEvent.getIndex()];
     }
+    
 
     @Override
     public String toString() {
@@ -70,5 +71,6 @@ public class FSMState <L> extends BaseMonitorState {
     public boolean isFinal() {
 	return isFinal;
     }
+
     
 }

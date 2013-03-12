@@ -42,10 +42,17 @@ public class FSMSpec<L> implements FiniteSpec {
     }
     
     public FSMSpec(FSMSpec fs) {	// Rahul
-    	baseEvents = fs.getBaseEvents();
+    	//baseEvents = fs.getBaseEvents();
+    	baseEvents = new HashSet<BaseEvent>();
     	parameters = fs.getFullParameterSet();
-    	states = fs.getStates();
+    	//states = fs.getStates();
+    	states = new HashSet<BaseMonitorState>();
+    	alphabet = new Alphabet();
+    	for(Parameter<?> param: parameters){
+    		alphabet.addCopiedParameter(param);
+    	}
     }
+    
     
     @Override
     public Set<BaseEvent> getBaseEvents() {

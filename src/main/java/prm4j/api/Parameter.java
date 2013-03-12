@@ -38,6 +38,12 @@ public class Parameter<T> implements Comparable<Parameter<?>> {
 	}
 	return this.parameterIndex;
     }
+    
+    ///////// Rahul
+    public final String getUniqueName() {
+    	return this.uniqueName;
+    }
+    ////////
 
     public void setIndex(int parameterIndex) {
 	if (parameterIndex < 0) {

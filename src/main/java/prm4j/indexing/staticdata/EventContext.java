@@ -41,6 +41,10 @@ public class EventContext {
     }
 
     public boolean isCreationEvent(BaseEvent baseEvent) {
+    	/*System.out.println("In isCreationEvent " + 
+    			((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getSymbol().getLabel() + " " + 
+    			((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getAbstraction() + " " + 
+    			baseEvent.getIndex());*/
 	return creationEvents[baseEvent.getIndex()];
     }
 

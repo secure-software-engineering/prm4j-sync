@@ -30,7 +30,7 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
     private final Set<Parameter<?>> parameters;
     private final Set<Symbol<L>> symbols;	//Rahul
     
-    private Set<Symbol<L>> backingSet = new HashSet<Symbol<L>>(); // Rahul
+    //private Set<Symbol<L>> backingSet = new HashSet<Symbol<L>>(); // Rahul
     private Map<L,Symbol<L>> labelToSymbol = new HashMap<L,Symbol<L>>(); // Rahul
     
     
@@ -44,9 +44,11 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 	@Override
 	public Iterator<Symbol<L>> iterator() {	// Rahul added
 		return symbols.iterator();
+		//return backingSet.iterator();
 	}
 	
 	public Symbol<L> getSymbolByLabel(L l) {
+		//System.out.println("Calling getSymbolByLabel with " + l);
 		for (Symbol<L> sym : this) {
 			if(sym.getLabel().equals(l)) {
 				return sym;
@@ -54,6 +56,7 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 		}
 		/////////////////////////// Rahul added this
 		if(l instanceof AbstractionAndSymbol){
+			//System.out.println("Calling getSymbolByLabel for AbstractionAndSymbol with " + l);
 			Symbol<L> sym = labelToSymbol.get(l);
 			if(sym==null) {
 				Set<Parameter<?>> params = ((AbstractionAndSymbol)l).getSymbol().getParameters();
@@ -63,14 +66,20 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 					Iterator <Parameter<?>> it = params.iterator();
 					Parameter<?> param1 = it.next();
 					sym = createSymbol1(l,param1);
+					//System.out.println("Param11 is: " + param1);
 				} else if (params.size() == 2){
 					Iterator <Parameter<?>> it = params.iterator();
 					Parameter<?> param1 = it.next();
+					//System.out.println("Param21 is: " + param1);
 					Parameter<?> param2 = it.next();
-					sym = createSymbol2(l,param1, param2);
+					//System.out.println("Param22 is: " + param2);
+					if(param1.getIndex()<param2.getIndex())
+						sym = createSymbol2(l,param1, param2);
+					else
+						sym = createSymbol2(l,param2, param1);
 				}
-				backingSet.add(sym);
-				labelToSymbol.put(l, sym);
+				labelToSymbol.put(l, sym);			
+				symbols.add(sym);
 				
 			}
 			return sym;
@@ -135,6 +144,13 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 	return parameter;
     }
 
+    public <P> Parameter<P> addCopiedParameter(Parameter<P> parameter) {
+    	parameters.add(parameter);
+    	// we index parameters in order of appearance, this may be not optimal
+    	parameterCount++;
+    	return parameter;
+        }
+    
     /**
      * Creates a symbol without any parameters.
      *
@@ -183,7 +199,9 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
     public <P1> Symbol1<L, P1> createSymbol1(L optionalName, Parameter<P1> param1) {
 	Symbol1<L, P1> symbol = new Symbol1<L,P1>(this, symbolCount, optionalName, param1);
 	symbols.add(symbol);
+
 	symbolCount++;
+	//System.out.println("Creating symbol with " + optionalName + " and " + "param1: " + param1);
 	return symbol;
     }
 
@@ -213,6 +231,7 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 	Symbol2<L, P1, P2> symbol = new Symbol2<L, P1, P2>(this, symbolCount, optionalName, param1, param2);
 	symbols.add(symbol);
 	symbolCount++;
+	//System.out.println("Creating symbol with " + optionalName + " and " + "param1: " + param1 + " and param2: "+ param2);
 	return symbol;
     }
 
@@ -233,13 +252,5 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 	return parameterCount;
     }
 
-	/*public BaseEvent getSymbolByLabel(AbstractionAndSymbol abstractionAndSymbol) {
-		for (Symbol<L> sym : this) {
-			if(sym.getLabel().equals(abstractionAndSymbol)) {
-				return sym;
-			}
-		}
-		throw new IllegalArgumentException("Unknown symbol:" + abstractionAndSymbol);
-	}*/
 
 }

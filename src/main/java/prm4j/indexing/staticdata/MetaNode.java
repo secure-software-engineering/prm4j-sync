@@ -155,6 +155,8 @@ public class MetaNode {
      * @return the successor meta node or <code>null</code>, if it does not exist
      */
     public MetaNode getMetaNode(Parameter<?> parameter) {
+    	//System.out.println("In getMetaNode1");
+    	//System.out.println("Parameter: " + parameter + " " + parameter.getIndex());
 	return successors[parameter.getIndex()];
     }
 
@@ -176,14 +178,17 @@ public class MetaNode {
      * @return the successor meta node
      */
     public MetaNode createAndGetMetaNode(Parameter<?> parameter) {
+    	//System.out.println("In createAndGetMetaNode with param: " + parameter);
 	MetaNode metaNode = successors[parameter.getIndex()];
 	if (metaNode == null) {
+		//System.out.println("MetaNode null");
 	    Set<Parameter<?>> nextNodeParameterSet = new HashSet<Parameter<?>>(nodeParameterSet);
+	    //System.out.println("nextNodeParameterSet: " + nextNodeParameterSet);
 	    assert !nextNodeParameterSet.contains(parameter) : "Parameter set could not have had contained new parameter.";
 	    nextNodeParameterSet.add(parameter);
 	    metaNode = new MetaNode(nextNodeParameterSet, fullParameterSet);
 	    successors[parameter.getIndex()] = metaNode;
-	}
+	} 
 	return metaNode;
     }
 
@@ -259,6 +264,7 @@ public class MetaNode {
      * @param monitorSetCount
      */
     public void setMonitorSetCount(int monitorSetCount) {
+    	//System.out.println("monitorSetCount is " + monitorSetCount);
 	this.monitorSetCount = monitorSetCount;
     }
 
