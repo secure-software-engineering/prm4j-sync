@@ -11,8 +11,6 @@
 package prm4j.indexing.staticdata;
 
 import prm4j.api.BaseEvent;
-import prm4j.api.Symbol;
-import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public class EventContext {
 
@@ -33,6 +31,10 @@ public class EventContext {
     }
 
     public MaxData[] getMaxData(BaseEvent baseEvent) {
+	if (baseEvent.getIndex() >= maxDataArray.length) {
+	    throw new ArrayIndexOutOfBoundsException("MaxData expected for baseEvent " + baseEvent
+		    + ". MaxDataArray has length of " + maxDataArray.length);
+	}
 	return maxDataArray[baseEvent.getIndex()];
     }
 
@@ -41,10 +43,11 @@ public class EventContext {
     }
 
     public boolean isCreationEvent(BaseEvent baseEvent) {
-    	/*System.out.println("In isCreationEvent " + 
-    			((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getSymbol().getLabel() + " " + 
-    			((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getAbstraction() + " " + 
-    			baseEvent.getIndex());*/
+	/*
+	 * System.out.println("In isCreationEvent " +
+	 * ((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getSymbol().getLabel() + " " +
+	 * ((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getAbstraction() + " " + baseEvent.getIndex());
+	 */
 	return creationEvents[baseEvent.getIndex()];
     }
 
