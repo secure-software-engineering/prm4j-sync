@@ -103,7 +103,7 @@ public class TraceReaderWithoutSynchro {
 						
 			//System.out.println("Creating Event: " + symbol.getLabel() + " with " + parameterValues[0] + " " + parameterValues[parameterValues.length - 1]);
 			Event e = new Event(symbol, parameterValues);
-			System.out.println("Processing " + e.getBaseEvent().getIndex()); 
+			System.out.println("\nProcessing event " + ((Symbol<String>)e.getBaseEvent()).getLabel());
 			
 						
 			

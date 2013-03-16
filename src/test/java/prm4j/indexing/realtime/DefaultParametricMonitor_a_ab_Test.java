@@ -24,6 +24,7 @@ import prm4j.api.fsm.FSMSpec;
 import prm4j.api.fsm.FSMState;
 import prm4j.indexing.realtime.AwareMatchHandler.AwareMatchHandler1;
 import prm4j.spec.FiniteSpec;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public class DefaultParametricMonitor_a_ab_Test extends AbstractDefaultParametricMonitorTest {
 
@@ -34,8 +35,8 @@ public class DefaultParametricMonitor_a_ab_Test extends AbstractDefaultParametri
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 
-	public final Symbol1<String> e1 = alphabet.createSymbol1("e1", p1);
-	public final Symbol2<String, String> e2 = alphabet.createSymbol2("e1", p1, p2);
+	public final Symbol1<AbstractionAndSymbol,String> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol2<AbstractionAndSymbol,String, String> e2 = alphabet.createSymbol2("e1", p1, p2);
 
 	public final AwareMatchHandler1<String> matchHandler = AwareMatchHandler.create(p1);
 

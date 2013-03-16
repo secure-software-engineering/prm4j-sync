@@ -79,9 +79,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
     public synchronized void processEvent(Event event) {
 
 	final BaseEvent baseEvent = event.getBaseEvent();
-	
-	//System.out.println("Symbol is: "+ ((Symbol)(baseEvent)).getLabel());
-
+		
 	// wait for a creation event to activate monitoring
 	if (!monitorActivated) {
 	    if (eventContext.isCreationEvent(baseEvent)) {
@@ -99,6 +97,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	Node instanceNode = nodeStore.getNode(bindings, parameterMask);
 	// monitor associated with the instance node. May be null if the instance node is a NullNode
 	Monitor instanceMonitor = instanceNode.getMonitor();
+	//System.out.println("Instance monitor: " + instanceMonitor);
 
 	if (instanceMonitor == null) { // 7
 	    // direct update phase
@@ -110,6 +109,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    findMaxPhase: for (MaxData maxData : eventContext.getMaxData(baseEvent)) { // 8
 		Monitor maxMonitor = nodeStore.getNode(bindings, maxData.getNodeMask()).getMonitor(); // 9
 		if (maxMonitor != null) { // 10
+
 		    final long maxMonitorTimestamp = maxMonitor.getTimestamp();
 		    for (int[] disableMask : maxData.getDisableMasks()) {
 			final Node subInstanceNode = nodeStore.getNode(bindings, disableMask);
@@ -150,6 +150,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 		}
 
 		if (eventContext.isDisablingEvent(baseEvent)) { // 2
+
 		    instanceMonitor = new DeadMonitor(timestamp);
 		    nodeStore.getOrCreateNode(bindings, parameterMask).setMonitor(instanceMonitor);
 		} else {
@@ -170,7 +171,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 		    } // 99
 		}
 	    }
-
+	    
 	    // inlined Join from 42
 	    joinPhase: for (JoinData joinData : eventContext.getJoinData(baseEvent)) { // 43
 
@@ -208,6 +209,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    }
 	} else {
 	    // update phase
+
 	    instanceMonitor.process(event); // 30
 	    for (MonitorSet monitorSet : instanceNode.getMonitorSets()) { // 30 - 32
 		if (monitorSet != null) {

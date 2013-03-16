@@ -11,12 +11,15 @@
 package prm4j.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import prm4j.api.Alphabet;
 import prm4j.api.MatchHandler;
 import prm4j.api.Parameter;
+import prm4j.api.Symbol;
 import prm4j.api.Symbol1;
 import prm4j.api.Symbol2;
 import prm4j.api.fsm.FSM;
@@ -63,5 +66,9 @@ public class FSM_SafeMapIterator implements FSM_Base{
 	
 	public Alphabet getAlphabet(){
 		return alphabet;
+	}
+	
+	public Set<Symbol> getCriticalSymbols(){
+		return Collections.emptySet();
 	}
 }

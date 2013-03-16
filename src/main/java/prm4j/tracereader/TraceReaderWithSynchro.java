@@ -36,24 +36,27 @@ import com.google.common.collect.Multiset;
 /*
  * This is a variant of the Hello World example in which events are read from a file.
  */
-public class TraceReader {
+public class TraceReaderWithSynchro {
 
 	public static void main(String[] args) throws IOException {
-		if(args.length!=3) {
-			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...)");
+		if(args.length!=4) {
+			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no)");
 		}
 		
 		String filePath = args[0];
 		String abstName = args[1];
 		String propName = args[2];
+		boolean criticalSymbolApplication = false;
+		if(args[3].equals("yes") || args[3].equals("Yes") || args[3].equals("YES"))
+			criticalSymbolApplication = true;
 		
 		FSM_Base fsm_base;
 		
 		AbstractSyncingSpec<String, ?> syncingSpec = null;
 		if(propName.equals("hasnext")) {
-			fsm_base = new FSM_HasNext();
+			fsm_base = new FSM_HasNext(criticalSymbolApplication);
 		} else if(propName.equals("fsi")) {
-			fsm_base = new FSM_SafeIterator();
+			fsm_base = new FSM_SafeIterator(criticalSymbolApplication);
 		} else{
 			throw new IllegalArgumentException("invalid monitor spec: "+propName);
 		}
@@ -113,19 +116,26 @@ public class TraceReader {
 				Parameter param = it.next();				
 				int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
 				parameterValues[param.getIndex()] = Long.parseLong(split[trInd +1]);
-				System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index " + "trInd: " + trInd);
+				//System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index " + "trInd: " + trInd);
 			}
 						
 			//System.out.println("Creating Event: " + symbol.getLabel() + " with " + parameterValues[0] + " " + parameterValues[parameterValues.length - 1]);
 			Event e = new Event(symbol, parameterValues);
-			System.out.println("Processing " + e.getBaseEvent().getIndex()); 
+			System.out.println("\nProcessing event " + ((Symbol<String>)e.getBaseEvent()).getLabel());
+			it = params.iterator();
+			Parameter param1;
+			Parameter param2;
+
 			
-			/*it = params.iterator();
-			while(it.hasNext()){
-				Parameter param = it.next();
-				symbol.bindObject(param, parameterValues[param.getIndex()], e.getBoundObjects());
-			}*/
-						
+			if(it.hasNext()){
+				param1 = it.next();
+				System.out.println("Bound object for param " + param1 + " is " + e.getBoundObject(param1.getIndex())); 
+			}
+			if(it.hasNext()){
+				param2 = it.next();
+				System.out.println("Bound object for param " + param2 + " is " + e.getBoundObject(param2.getIndex())); 
+			}
+			
 			syncingSpec.maybeProcessEvent(e);
 		}
 	
@@ -141,9 +151,6 @@ public class TraceReader {
 		return null;
 	}
 	
-	/*static boolean shouldMonitor() {
-		return true;
-	}*/
-	
+
 	
 }

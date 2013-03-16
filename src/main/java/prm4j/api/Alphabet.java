@@ -79,7 +79,9 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 						sym = createSymbol2(l,param2, param1);
 				}
 				labelToSymbol.put(l, sym);			
-				symbols.add(sym);
+				//symbols.add(sym);
+				//System.out.println("Symbol count: " + symbolCount);
+				//System.out.println("Symbol added is: " + sym.getLabel());
 				
 			}
 			return sym;
@@ -146,7 +148,6 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 
     public <P> Parameter<P> addCopiedParameter(Parameter<P> parameter) {
     	parameters.add(parameter);
-    	// we index parameters in order of appearance, this may be not optimal
     	parameterCount++;
     	return parameter;
         }

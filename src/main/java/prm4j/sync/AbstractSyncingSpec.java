@@ -140,10 +140,36 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		this.delegate = delegate;
 		this.samplingPeriod = samplingPeriod();
 		this.skipPeriod = (int) (1.0d/samplingRate() - 1) * samplingPeriod; 
-		this.criticalSymbols = criticalSymbols();
+		this.criticalSymbols = delegate.criticalSymbols();
 		//this.alphabet = createAlphabet();	// Rahul
 		this.initialState = setupStatesAndTransitions();
 		this.parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
+		printSyncSpec();
+	}
+
+	private void printSyncSpec(){
+		System.out.println("\nDumping FSMSpec's fsm details:");
+		System.out.println("Alphabet Symbols: " + alphabet.getSymbols());
+		System.out.println("Alphabet Parameters: " + alphabet.getParameters());
+		System.out.println("\nSymbols: " + baseEvents);
+		System.out.println("Symbol details:");
+		for(BaseEvent base: baseEvents){
+			@SuppressWarnings("unchecked")
+			Symbol<AbstractionAndSymbol> sym = (Symbol<AbstractionAndSymbol>)base;
+			System.out.println("sym label: " + sym.getLabel().getSymbol().getLabel());
+			System.out.println("sym abs: " + sym.getLabel().getAbstraction());
+			for(Parameter<?> par: sym.getParameters()){
+				System.out.println("Param: " + par + ", index: " + par.getIndex());
+			}			
+		}
+		System.out.println("\nCritical Symbol details:");
+		for(Symbol<L> sym: criticalSymbols){
+			System.out.println("sym label: " + sym.getLabel());
+		}
+		System.out.println("\nParameters: " + parameters);
+		System.out.println("States: " + states);
+		System.out.println("Initial state: " + initialState);
+		System.out.println("");
 	}
 
 	 
@@ -177,14 +203,6 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		return new Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol>();
 	}
 	
-	/*protected Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol> createAlphabetAndParameters(FSMSpec<L> delegate) {
-		Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol> a = new Alphabet<AbstractSyncingSpec<L,A>.AbstractionAndSymbol>();
-		Iterator<Parameter<?>> it = delegate.getAlphabet().getParameters().iterator();
-		while(it.hasNext()){
-			a.addParameter(it.next());
-		}
-		return a;
-	}*/
 	
 	
 	
@@ -202,7 +220,6 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	protected FSMState<AbstractionAndSymbol> setupStatesAndTransitions() {
 		//System.out.println("In setupStatesAndTransitions");
 		Alphabet<L> alphabet = delegate.getAlphabet();
-		//Set<Symbol<L>> alphabet = (Set<Symbol<L>>) delegate.getBaseEvents();
 		Set<Set<FSMState<L>>> worklist = new HashSet<Set<FSMState<L>>>();
 		worklist.add(Collections.singleton(((FSMState<L>)delegate.getInitialState())));
 		
@@ -246,6 +263,10 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 				
 				for (Symbol<L> sym : alphabet) {
 					//System.out.println("1. Symbol: " + sym.getLabel() + " Abstraction: " + abstraction);
+					// First compute only for non-critical symbols
+					if(criticalSymbols.contains(sym)){	// Rahul
+						continue;
+					}
 					//compute successors of the current state set under sym
 					Set<FSMState<L>> symSuccs = new HashSet<FSMState<L>>();
 					for(FSMState<L> curr : frontier) {
@@ -285,6 +306,60 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 					}
 				}
 				
+				///////////////////////////
+				// Now the transitions and states for critical symbols. There will only be empty abstractions
+				// since they will always be monitored.
+				// Confirm this with Eric.
+				// This is quite redundant and should be rewritten, if it's correct.
+				///////////////////////////
+
+				for (Symbol<L> sym : alphabet) {
+					//System.out.println("1. Symbol: " + sym.getLabel() + " Abstraction: " + abstraction);
+					// Now compute  for critical symbols
+					if(!criticalSymbols.contains(sym)){	// Rahul
+						continue;
+					}
+					//compute successors of the current state set under sym
+					Set<FSMState<L>> symSuccs = new HashSet<FSMState<L>>();
+					for(FSMState<L> curr : frontier) {
+						FSMState<L> succ = (FSMState<L>) curr.getSuccessor(sym);
+						if(succ!=null)
+							symSuccs.add(succ);
+					}
+					if(!symSuccs.isEmpty()) {
+						//System.out.println("2. Symbol: " + sym.getLabel() + " Abstraction: " + abstraction);
+						boolean subsumed = transitionForSymbolAlreadyExists(currentStates,sym,symSuccs, emptyAbstraction);
+						if(!subsumed) {
+							//System.out.println("3. Symbol: " + sym.getLabel() + " Abstraction: " + abstraction);
+							//create label for new transition: (abstraction,sym)
+							Symbol<AbstractionAndSymbol> compoundSymbol = this.getSymbolByLabel(new AbstractionAndSymbol(emptyAbstraction, sym));
+
+							//register possible target states under that transition
+							Set<FSMState<L>> newTargets = addTargetStatesToTransition(currentStates, compoundSymbol, symSuccs);
+							//register the new state set so that we can later-on add it to the worklist
+							newStateSets.add(newTargets);
+							
+							//A newAbstraction = abstraction.add(sym);
+							A newAbstraction = emptyAbstraction.add(sym);
+							worklistSyms.add(newAbstraction);
+							Set<FSMState<L>> old = abstractionToStates.get(newAbstraction);
+							if(old==null) {
+								old = new HashSet<FSMState<L>>();
+								abstractionToStates.put(newAbstraction, old);
+							} 
+							old.addAll(symSuccs);
+							//for abstracted events we do not know whether they happened on the same object
+							//or not; hence we could also have stayed in the same set of states
+							old.addAll(frontier);
+							
+							baseEvents.add(compoundSymbol);	// Rahul
+							//System.out.println("Added Compound Symbol: " + compoundSymbol + " " + sym.getLabel() + " Abstraction: " + abstraction);
+							
+						}
+					}
+				}
+				///////////////////////////
+				
 				//push all newly discovered state sets not yet processed onto the worklist
 				for (Set<FSMState<L>> states : newStateSets) {
 					if(!statesVisited.contains(states)) {
@@ -298,8 +373,8 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		createTransitions();
 		
 		addCompoundStatesToStates();
-		printCompoundSymbols();
-		printParameters();
+		//printCompoundSymbols();
+		//printParameters();
 		
 		return stateFor(Collections.singleton(((FSMState<L>)delegate.getInitialState())));
 
@@ -314,6 +389,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		}
 	}
 	
+	@SuppressWarnings({ "unchecked", "unused" })
 	private void printCompoundSymbols(){
 		System.out.println("Symbols description:");
 		for(BaseEvent sym: this.baseEvents){
@@ -324,6 +400,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void printParameters(){
 		System.out.println("Parameters in the current template: " + this.getParameters());
 		//System.out.println("Parameters in the current template: " + this.getFullParameterSet());
@@ -442,7 +519,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 * Returns the set of critical symbols for the monitored property. Such symbols will always be monitored,
 	 * no matter whether or not sampling is enabled.
 	 */
-	abstract protected Set<Symbol<L>> criticalSymbols();
+	//abstract protected Set<Symbol<L>> criticalSymbols();
 
 	/**
 	 * Determines whether the current event should be monitored.
@@ -453,15 +530,19 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 */
 
 	protected boolean shouldMonitor(Symbol<L> symbol){ // Rahul changed it
-		/*Random random = new Random();
+		if(criticalSymbols.contains(symbol)) // Rahul
+			return true;
+		
+		Random random = new Random();
 		if(phase==0) {
 			processEventsInCurrentPeriod = random.nextBoolean();
 			System.out.println(processEventsInCurrentPeriod?"Should Monitor.":"Should not monitor.");
 		}
 		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
 		phase = (phase+1) % periodLength;
-		return processEventsInCurrentPeriod || criticalSymbols.contains(symbol);*/
-		return true;
+		return processEventsInCurrentPeriod;
+		//return processEventsInCurrentPeriod || criticalSymbols.contains(symbol);
+		//return true;
 	}
 
 	
@@ -517,6 +598,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	}
 	
 	//@Override
+	@SuppressWarnings("unchecked")
 	public SyncFSMMonitor createMonitorPrototype() {
 		return new SyncFSMMonitor((FSMState<AbstractionAndSymbol>)getInitialState());
 	}
@@ -537,8 +619,9 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		}
 		
 		//@Override
+		@SuppressWarnings("unchecked")
 		public FSMState<AbstractionAndSymbol> getSuccessor(Symbol<AbstractionAndSymbol> sym) {
-			System.out.println("Entered getSuccessor of SyncState");
+			//System.out.println("Entered getSuccessor of SyncState");
 			A max = symToMaxAbstraction.get(sym.getLabel().getSymbol());
 			if(max!=null && max.isSmallerOrEqualThan(sym.getLabel().getAbstraction())) {
 				sym = symToMaxSymbol.get(sym.getLabel().getSymbol());
@@ -548,6 +631,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		
 		@Override //Rahul
 		public void addTransition(Symbol<AbstractionAndSymbol> sym, FSMState<AbstractionAndSymbol> succ) {
+			//System.out.println("Entered addTransition of SyncState");
 			super.addTransition(sym, succ);
 			A abstraction = sym.getLabel().getAbstraction();
 			Symbol<L> symbol = sym.getLabel().getSymbol();
@@ -583,9 +667,10 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 			return super.processEvent(e);
 		}
 		
-	    @Override
+		@SuppressWarnings("unchecked")
+		@Override
 	    public Monitor copy() {
-		return new SyncFSMMonitor((FSMState)super.state);
+		return new SyncFSMMonitor((FSMState<AbstractionAndSymbol>)super.state);
 	    }
 	}
 

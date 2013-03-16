@@ -69,18 +69,11 @@ public class StaticDataConverter {
      * Creates arrays of maxData, joinData, chainData.
      */
     private void convertToLowLevelStaticData() { // 1
-    	System.out.println("pp.getMonitorSetData()" + pp.getMonitorSetData());
 	for (Set<Parameter<?>> parameterSet : pp.getMonitorSetData().keys()) { // 2
 	    int i = 0; // 3
 	    for (Tuple<Set<Parameter<?>>, Boolean> tuple : getMonitorSetDataInTopologicalOrdering(parameterSet)) { // 4
-	    	/*System.out.println("");
-	    	System.out.println("parameterSet: " + parameterSet);
-	    	System.out.println("tuple.getLeft(): " + tuple.getLeft());
-	    	System.out.println("i: " + i);*/
-
 		monitorSetIds.put(parameterSet, tuple.getLeft(), i++); // 5, 6
 	    } // 7
-	    System.out.println("Done");
 	} // 8
 	for (BaseEvent baseEvent : pp.getBaseEvents()) { // 9
 	    for (Set<Parameter<?>> enableParameterSet : pp.getMaxData().get(baseEvent)) { // 10
@@ -442,7 +435,6 @@ public class StaticDataConverter {
     }
 
     protected JoinData[][] getJoinData() {
-    	System.out.println("pp.getBaseEvents().size() " + pp.getBaseEvents().size());
 	JoinData[][] joinDataArray = new JoinData[pp.getBaseEvents().size()][];
 	for (BaseEvent baseEvent : pp.getBaseEvents()) {
 	    joinDataArray[baseEvent.getIndex()] = joinData.get(baseEvent) != null ? joinData.get(baseEvent).toArray(
@@ -452,11 +444,7 @@ public class StaticDataConverter {
     }
 
     protected boolean[] getCreationEvents() {
-    	/*System.out.println("Total events: " + pp.getBaseEvents().size());
-    	for(BaseEvent baseEvent : pp.getBaseEvents()){
-    		System.out.println("Symbol: "  + ((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getSymbol().getLabel() + " " + ((Symbol<AbstractionAndSymbol>)baseEvent).getLabel().getAbstraction() + " "+ baseEvent.getIndex());
-    	}*/
-	boolean[] creationEvents = new boolean[pp.getBaseEvents().size()];
+ 	boolean[] creationEvents = new boolean[pp.getBaseEvents().size()];
 	for (BaseEvent baseEvent : pp.getBaseEvents()) {
 	    creationEvents[baseEvent.getIndex()] = pp.getCreationEvents().contains(baseEvent);
 	}

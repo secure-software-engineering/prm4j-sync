@@ -11,11 +11,14 @@
 package prm4j.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import prm4j.api.Alphabet;
 import prm4j.api.MatchHandler;
@@ -38,14 +41,14 @@ public class FSM_SafeIterator implements FSM_Base{
     public final Symbol1<String, Collection> updateColl = alphabet.createSymbol1("update", c);
     public final Symbol1<String, Iterator> useIter = alphabet.createSymbol1("next", i);
 
-    public final FSM fsm = new FSM<String>(alphabet);
+    public final FSM fsm = new FSM(alphabet);
 
     public final MatchHandler matchHandler = MatchHandler.NO_OP;
 
     public final FSMState initial = fsm.createInitialState();
     public final FSMState s1 = fsm.createState();
     public final FSMState s2 = fsm.createState();
-    public final FSMState s3 = fsm.createState();
+    //public final FSMState s3 = fsm.createState();
     public final FSMState error = fsm.createAcceptingState(matchHandler);
     
     
@@ -54,9 +57,11 @@ public class FSM_SafeIterator implements FSM_Base{
     public final int totParams = 2;
     
 
-    
+    public FSM_SafeIterator(){
+    	this(false);
+    }
 
-    public FSM_SafeIterator() {
+    public FSM_SafeIterator(boolean criticalSymbolApplication) {
 	initial.addTransition(updateColl, initial);
 	initial.addTransition(createIter, s1);
 	s1.addTransition(useIter, s1);
@@ -64,7 +69,8 @@ public class FSM_SafeIterator implements FSM_Base{
 	s2.addTransition(updateColl, s2);
 	s2.addTransition(useIter, error);
 	
-	
+	if(criticalSymbolApplication)
+		fsm.addCriticalSymbol(createIter);
 	
 	
     List<Parameter<?>> lc = new LinkedList<Parameter<?>>();
@@ -98,4 +104,5 @@ public class FSM_SafeIterator implements FSM_Base{
 	public int getTotalParams(){
 		return totParams;
 	}
+	
 }

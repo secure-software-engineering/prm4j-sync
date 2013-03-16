@@ -232,12 +232,9 @@ public class FiniteParametricProperty implements ParametricProperty {
      * presented in thesis.
      */
     private void calculateStaticData() { // 1
-    	System.out.println("Arrived 1");
 	for (BaseEvent baseEvent : finiteSpec.getBaseEvents()) { // 3
-		System.out.println("Arrived 2");
 	    final Set<Parameter<?>> parameterSet = baseEvent.getParameters(); // 4
 	    for (Set<Parameter<?>> enablingParameterSet : getEnablingParameterSetsInReverseTopologicalOrdering(baseEvent)) { // 5
-	    	System.out.println("Arrived 3");
 		/*
 		 * the empty parameter set {} can be filtered. No parameter set can contain less elements, so there can
 		 * be no maxData = (X -> {}). And a joindata = (e -> ( {} -> {} )) makes no sense either. The same with
@@ -245,12 +242,9 @@ public class FiniteParametricProperty implements ParametricProperty {
 		 */
 		if (!enablingParameterSet.equals(EMPTY_PARAMETER_SET)
 			&& !isSubsetEq(parameterSet, enablingParameterSet)) { // 6
-	    	System.out.println("Arrived 4");
 		    if (isSuperset(parameterSet, enablingParameterSet)) { // 7
-		    	System.out.println("Arrived 5");
 			maxData.put(baseEvent, enablingParameterSet); // 8
 		    } else { // 9
-		    	System.out.println("Arrived 6");
 			final Set<Parameter<?>> compatibleSubset = intersection(parameterSet, enablingParameterSet); // 10
 			final Tuple<Set<Parameter<?>>, Set<Parameter<?>>> tuple = tuple(compatibleSubset,
 				enablingParameterSet);
@@ -260,12 +254,8 @@ public class FiniteParametricProperty implements ParametricProperty {
 			//System.out.println("tuple: " + tuple);
 			if (updates.contains(tuple)) { // 13
 			    monitorSetData.put(compatibleSubset, tuple(enablingParameterSet, true)); // 14
-			    System.out.println("compatibleSubset: " + compatibleSubset);
-			    System.out.println("enablingParameterSet: " + enablingParameterSet + " true");
 			} else { // 15
 			    monitorSetData.put(compatibleSubset, tuple(enablingParameterSet, false)); // 16
-			    System.out.println("compatibleSubset: " + compatibleSubset);
-			    System.out.println("enablingParameterSet: " + enablingParameterSet + " false");
 			} // 17
 		    } // 18
 		} // 19

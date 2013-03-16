@@ -10,15 +10,18 @@
  */
 package prm4j.util;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import prm4j.api.Alphabet;
 import prm4j.api.MatchHandler;
 import prm4j.api.Parameter;
+import prm4j.api.Symbol;
 import prm4j.api.Symbol1;
 import prm4j.api.fsm.FSM;
 import prm4j.api.fsm.FSMState;
@@ -47,8 +50,12 @@ public class FSM_HasNext implements FSM_Base{
 	
 	
     public Map<String, List<Parameter<?>>> order = new HashMap<String, List<Parameter<?>>>();
+    
+    public FSM_HasNext()  {
+    	this(false);
+    }
 
-	public FSM_HasNext() {
+	public FSM_HasNext(boolean criticalSymbolApplication) {
 	    initial.addTransition(hasNext, safe);
 	    initial.addTransition(next, error);
 	    safe.addTransition(hasNext, safe);
@@ -56,6 +63,7 @@ public class FSM_HasNext implements FSM_Base{
 	    error.addTransition(next, error);
 	    error.addTransition(hasNext, safe);
 	    
+   
 	    List<Parameter<?>> li = new LinkedList<Parameter<?>>();
 	    li.add(i);
 	    order.put("hasNext", li);
@@ -78,4 +86,5 @@ public class FSM_HasNext implements FSM_Base{
 	public int getTotalParams(){
 		return totParams;
 	}
+	
 }

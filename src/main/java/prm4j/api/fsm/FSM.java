@@ -16,6 +16,7 @@ import java.util.Set;
 
 import prm4j.api.Alphabet;
 import prm4j.api.MatchHandler;
+import prm4j.api.Symbol;
 
 /**
  * A finite state automaton.
@@ -27,11 +28,13 @@ public class FSM<L> {
     private final Set<String> usedNames;
     private int stateCount = 0;
     private FSMState<L> initialState;
+    private Set<Symbol<L>> criticalSymbols;	// Rahul
 
     public FSM(Alphabet<L> alphabet) {
 	this.alphabet = alphabet;
 	states = new HashSet<FSMState<L>>();
 	usedNames = new HashSet<String>();
+	criticalSymbols = new HashSet<Symbol<L>>(); // Rahul
     }
 
     /**
@@ -148,5 +151,24 @@ public class FSM<L> {
 	    throw new IllegalStateException("No initial state created!");
 	return initialState;
     }
+    
+    /**
+     * Returns the set of critical symbols.
+     *
+     * @return the set of critical symbols
+     */
+	public Set<Symbol<L>> getCriticalSymbols(){	// Rahul
+		return criticalSymbols;
+	}
+	
+    /**
+     * Adds a new symbol to the critical symbol set.
+     *
+     * @return void
+     */
+    public void addCriticalSymbol(Symbol<L> sym) {
+    	criticalSymbols.add(sym);
+    }
+
 
 }

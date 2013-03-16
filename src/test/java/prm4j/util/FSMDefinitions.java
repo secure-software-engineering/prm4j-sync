@@ -26,6 +26,7 @@ import prm4j.indexing.realtime.AwareMatchHandler;
 import prm4j.indexing.realtime.AwareMatchHandler.AwareMatchHandler0;
 import prm4j.indexing.realtime.AwareMatchHandler.AwareMatchHandler1;
 import prm4j.indexing.realtime.AwareMatchHandler.AwareMatchHandler2;
+//import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public abstract class FSMDefinitions {
 
@@ -38,10 +39,10 @@ public abstract class FSMDefinitions {
 	public final Parameter<Collection> c = alphabet.createParameter("c", Collection.class);
 	public final Parameter<Iterator> i = alphabet.createParameter("i", Iterator.class);
 
-	public final Symbol2<Map, Collection> createColl = alphabet.createSymbol2("createColl", m, c);
-	public final Symbol2<Collection, Iterator> createIter = alphabet.createSymbol2("createIter", c, i);
-	public final Symbol1<Map> updateMap = alphabet.createSymbol1("updateMap", m);
-	public final Symbol1<Iterator> useIter = alphabet.createSymbol1("useIter", i);
+	public final Symbol2<String, Map, Collection> createColl = alphabet.createSymbol2("createColl", m, c);
+	public final Symbol2<String, Collection, Iterator> createIter = alphabet.createSymbol2("createIter", c, i);
+	public final Symbol1<String, Map> updateMap = alphabet.createSymbol1("updateMap", m);
+	public final Symbol1<String, Iterator> useIter = alphabet.createSymbol1("useIter", i);
 
 	public final FSM fsm = new FSM(alphabet);
 
@@ -78,8 +79,8 @@ public abstract class FSMDefinitions {
 
 	public final Parameter<Iterator> i = alphabet.createParameter("i", Iterator.class);
 
-	public final Symbol1<Iterator> hasNext = alphabet.createSymbol1("hasNext", i);
-	public final Symbol1<Iterator> next = alphabet.createSymbol1("next", i);
+	public final Symbol1<String, Iterator> hasNext = alphabet.createSymbol1("hasNext", i);
+	public final Symbol1<String,Iterator> next = alphabet.createSymbol1("next", i);
 
 	public final FSM fsm = new FSM(alphabet);
 
@@ -107,10 +108,10 @@ public abstract class FSMDefinitions {
 	public final Parameter<Collection> c = alphabet.createParameter("c", Collection.class);
 	public final Parameter<Iterator> i = alphabet.createParameter("i", Iterator.class);
 
-	public final Symbol1<Collection> sync = alphabet.createSymbol1("sync", c);
-	public final Symbol2<Collection, Iterator> asyncCreateIter = alphabet.createSymbol2("asyncCreateIter", c, i);
-	public final Symbol2<Collection, Iterator> syncCreateIter = alphabet.createSymbol2("syncCreateIter", c, i);
-	public final Symbol1<Iterator> accessIter = alphabet.createSymbol1("accessIter", i);
+	public final Symbol1<String,Collection> sync = alphabet.createSymbol1("sync", c);
+	public final Symbol2<String,Collection, Iterator> asyncCreateIter = alphabet.createSymbol2("asyncCreateIter", c, i);
+	public final Symbol2<String,Collection, Iterator> syncCreateIter = alphabet.createSymbol2("syncCreateIter", c, i);
+	public final Symbol1<String,Iterator> accessIter = alphabet.createSymbol1("accessIter", i);
 
 	public final FSM fsm = new FSM(alphabet);
 
@@ -140,12 +141,12 @@ public abstract class FSMDefinitions {
 	public final Parameter<Collection<Object>> c = alphabet.addParameter(new Parameter<Collection<Object>>("c"));
 	public final Parameter<Iterator<Object>> i = alphabet.addParameter(new Parameter<Iterator<Object>>("i"));
 
-	public final Symbol1<Collection<Object>> sync = alphabet.createSymbol1("sync", c);
-	public final Symbol2<Collection<Object>, Iterator<Object>> asyncCreateIter = alphabet.createSymbol2(
+	public final Symbol1<String,Collection<Object>> sync = alphabet.createSymbol1("sync", c);
+	public final Symbol2<String,Collection<Object>, Iterator<Object>> asyncCreateIter = alphabet.createSymbol2(
 		"asyncCreateIter", c, i);
-	public final Symbol2<Collection<Object>, Iterator<Object>> syncCreateIter = alphabet.createSymbol2(
+	public final Symbol2<String,Collection<Object>, Iterator<Object>> syncCreateIter = alphabet.createSymbol2(
 		"syncCreateIter", c, i);
-	public final Symbol1<Iterator<Object>> accessIter = alphabet.createSymbol1("accessIter", i);
+	public final Symbol1<String,Iterator<Object>> accessIter = alphabet.createSymbol1("accessIter", i);
 
 	public final FSM fsm = new FSM(alphabet);
 
@@ -199,9 +200,9 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 
-	public final Symbol1<String> e1 = alphabet.createSymbol1("e1", p1);
-	public final Symbol1<String> e2 = alphabet.createSymbol1("e2", p2);
-	public final Symbol2<String, String> e3 = alphabet.createSymbol2("e3", p1, p2);
+	public final Symbol1<String,String> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol1<String,String> e2 = alphabet.createSymbol1("e2", p2);
+	public final Symbol2<String,String, String> e3 = alphabet.createSymbol2("e3", p1, p2);
 
 	public final FSM fsm = new FSM(alphabet);
 
@@ -223,7 +224,7 @@ public abstract class FSMDefinitions {
 
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 
-	public final Symbol1<String> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol1<String,String> e1 = alphabet.createSymbol1("e1", p1);
 
 	public final AwareMatchHandler1<String> matchHandler = AwareMatchHandler.create(p1);
 
@@ -248,7 +249,7 @@ public abstract class FSMDefinitions {
 
 	public final Parameter<Object> p1 = alphabet.createParameter("p1", Object.class);
 
-	public final Symbol1<Object> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol1<String,Object> e1 = alphabet.createSymbol1("e1", p1);
 
 	public final AwareMatchHandler1<Object> matchHandler = AwareMatchHandler.create(p1);
 
@@ -272,9 +273,9 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 
-	public final Symbol1<String> e1 = alphabet.createSymbol1("e1", p1);
-	public final Symbol2<String, String> e2 = alphabet.createSymbol2("e2", p1, p2);
-	public final Symbol1<String> e3 = alphabet.createSymbol1("e3", p2);
+	public final Symbol1<String,String> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol2<String,String, String> e2 = alphabet.createSymbol2("e2", p1, p2);
+	public final Symbol1<String,String> e3 = alphabet.createSymbol1("e3", p2);
 
 	public final AwareMatchHandler2<String, String> matchHandler = AwareMatchHandler.create(p1, p2);
 
@@ -302,9 +303,9 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> b = alphabet.createParameter("b", String.class);
 	public final Parameter<String> c = alphabet.createParameter("c", String.class);
 
-	public final Symbol2<String, String> e1 = alphabet.createSymbol2("e1", a, b);
-	public final Symbol2<String, String> e2 = alphabet.createSymbol2("e2", b, c);
-	public final Symbol1<String> e3 = alphabet.createSymbol1("e3", c);
+	public final Symbol2<String,String, String> e1 = alphabet.createSymbol2("e1", a, b);
+	public final Symbol2<String,String, String> e2 = alphabet.createSymbol2("e2", b, c);
+	public final Symbol1<String,String> e3 = alphabet.createSymbol1("e3", c);
 
 	public final AwareMatchHandler2<String, String> matchHandler = AwareMatchHandler.create(a, c);
 
@@ -330,9 +331,9 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 	public final Parameter<String> p3 = alphabet.createParameter("p3", String.class);
 
-	public final Symbol2<String, String> e1 = alphabet.createSymbol2("e1", p1, p2);
-	public final Symbol2<String, String> e2 = alphabet.createSymbol2("e2", p2, p3);
-	public final Symbol2<String, String> e3 = alphabet.createSymbol2("e3", p1, p3);
+	public final Symbol2<String,String, String> e1 = alphabet.createSymbol2("e1", p1, p2);
+	public final Symbol2<String,String, String> e2 = alphabet.createSymbol2("e2", p2, p3);
+	public final Symbol2<String,String, String> e3 = alphabet.createSymbol2("e3", p1, p3);
 
 	public final AwareMatchHandler2<String, String> matchHandler = AwareMatchHandler.create(p1, p3);
 
@@ -359,10 +360,10 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> c = alphabet.createParameter("c", String.class);
 	public final Parameter<String> d = alphabet.createParameter("d", String.class);
 
-	public final Symbol2<String, String> event_ab = alphabet.createSymbol2("e1", a, b);
-	public final Symbol2<String, String> event_bc = alphabet.createSymbol2("e2", b, c);
-	public final Symbol2<String, String> event_cd = alphabet.createSymbol2("e3", c, d);
-	public final Symbol2<String, String> event_ad = alphabet.createSymbol2("e4", a, d);
+	public final Symbol2<String,String, String> event_ab = alphabet.createSymbol2("e1", a, b);
+	public final Symbol2<String,String, String> event_bc = alphabet.createSymbol2("e2", b, c);
+	public final Symbol2<String,String, String> event_cd = alphabet.createSymbol2("e3", c, d);
+	public final Symbol2<String,String, String> event_ad = alphabet.createSymbol2("e4", a, d);
 
 	public final AwareMatchHandler2<String, String> matchHandler = AwareMatchHandler.create(a, d);
 
@@ -392,8 +393,8 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 
-	public final Symbol2<String, String> e1 = alphabet.createSymbol2("e1", p1, p2);
-	public final Symbol1<String> e2 = alphabet.createSymbol1("e2", p2);
+	public final Symbol2<String,String, String> e1 = alphabet.createSymbol2("e1", p1, p2);
+	public final Symbol1<String,String> e2 = alphabet.createSymbol1("e2", p2);
 
 	public final AwareMatchHandler0 matchHandler = AwareMatchHandler.create();
 
@@ -420,8 +421,8 @@ public abstract class FSMDefinitions {
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 
-	public final Symbol1<String> e1 = alphabet.createSymbol1("e1", p1);
-	public final Symbol1<String> e2 = alphabet.createSymbol1("e2", p2);
+	public final Symbol1<String,String> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol1<String,String> e2 = alphabet.createSymbol1("e2", p2);
 
 	public final AwareMatchHandler0 matchHandler = AwareMatchHandler.create();
 

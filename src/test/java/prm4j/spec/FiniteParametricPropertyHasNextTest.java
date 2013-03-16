@@ -13,6 +13,7 @@ package prm4j.spec;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Before;
@@ -23,6 +24,8 @@ import prm4j.api.Parameter;
 import prm4j.api.fsm.FSMSpec;
 import prm4j.indexing.realtime.NodeManager;
 import prm4j.indexing.staticdata.StaticDataConverter;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
+import prm4j.sync.SymbolSetSyncingSpec;
 
 public class FiniteParametricPropertyHasNextTest extends AbstractTest {
 
@@ -32,7 +35,7 @@ public class FiniteParametricPropertyHasNextTest extends AbstractTest {
     @Before
     public void init() {
 	fsm = new FSM_HasNext();
-	fpp = new FiniteParametricProperty(new FSMSpec(fsm.fsm));
+	fpp = new FiniteParametricProperty(new SymbolSetSyncingSpec<String>(new FSMSpec<String>(fsm.fsm)));
     }
 
     @Test

@@ -24,10 +24,12 @@ import prm4j.indexing.Monitor;
 import prm4j.indexing.BaseMonitorState;
 import prm4j.indexing.realtime.StatefulMonitor;
 import prm4j.spec.FiniteSpec;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public class FSMSpec<L> implements FiniteSpec {
 
 	protected Alphabet<L> alphabet; // Rahul
+	protected Set<Symbol<L>> criticalSymbols; // Rahul
 	protected Set<BaseEvent> baseEvents;
     protected Set<Parameter<?>> parameters;
     protected Set<BaseMonitorState> states;
@@ -39,6 +41,13 @@ public class FSMSpec<L> implements FiniteSpec {
 	states = unmodifiableSet(new HashSet<BaseMonitorState>(fsm.getStates()));
 	initialState = fsm.getInitialState();
 	alphabet = fsm.getAlphabet(); // Rahul
+	criticalSymbols = fsm.getCriticalSymbols(); // Rahul
+	System.out.println("FSMSpec's critical symbol details:");
+	for(BaseEvent base: criticalSymbols){
+		@SuppressWarnings("unchecked")
+		Symbol<L> sym = (Symbol<L>)base;
+		System.out.println("sym label: " + sym.getLabel());			
+	}
     }
     
     public FSMSpec(FSMSpec fs) {	// Rahul
@@ -51,6 +60,13 @@ public class FSMSpec<L> implements FiniteSpec {
     	for(Parameter<?> param: parameters){
     		alphabet.addCopiedParameter(param);
     	}
+    	criticalSymbols = fs.criticalSymbols();	// Rahul
+    	System.out.println("FSMSpec's critical symbol details:");
+		for(BaseEvent base: criticalSymbols){
+			@SuppressWarnings("unchecked")
+			Symbol<L> sym = (Symbol<L>)base;
+			System.out.println("sym label: " + sym.getLabel());			
+		}
     }
     
     
@@ -85,6 +101,15 @@ public class FSMSpec<L> implements FiniteSpec {
 	
 	public Symbol<L> getSymbolByLabel(L label) { // Rahul
 		return alphabet.getSymbolByLabel(label);
+	}
+	
+    /**
+     * Returns the set of critical symbols.
+     *
+     * @return the set of critical symbols
+     */
+	public Set<Symbol<L>> criticalSymbols(){	// Rahul
+		return criticalSymbols;
 	}
 
 }

@@ -33,7 +33,7 @@ public class DefaultParametricMonitor_a_ab_a_b_Test extends AbstractDefaultParam
     @Before
     public void init() {
 	fsm = new FSM_a_ab_a_b();
-	FiniteSpec finiteSpec = new FSMSpec(fsm.fsm);
+	FiniteSpec finiteSpec = new FSMSpec<String>(fsm.fsm);
 	createDefaultParametricMonitorWithAwareComponents(finiteSpec);
     }
 

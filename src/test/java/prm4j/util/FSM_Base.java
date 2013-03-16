@@ -10,16 +10,12 @@
  */
 package prm4j.util;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+
 
 import prm4j.api.Alphabet;
-import prm4j.api.MatchHandler;
 import prm4j.api.Parameter;
-import prm4j.api.Symbol1;
 import prm4j.api.fsm.FSM;
-import prm4j.api.fsm.FSMState;
 
 @SuppressWarnings("rawtypes")
 public interface FSM_Base {

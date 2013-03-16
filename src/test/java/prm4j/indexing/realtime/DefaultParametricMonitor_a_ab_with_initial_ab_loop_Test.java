@@ -24,26 +24,27 @@ import prm4j.api.fsm.FSMSpec;
 import prm4j.api.fsm.FSMState;
 import prm4j.indexing.realtime.AwareMatchHandler.AwareMatchHandler1;
 import prm4j.spec.FiniteSpec;
+import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 public class DefaultParametricMonitor_a_ab_with_initial_ab_loop_Test extends AbstractDefaultParametricMonitorTest {
 
     public static class FSM_a_ab_with_initial_ab_loop {
 
-	public final Alphabet alphabet = new Alphabet();
+	public final Alphabet<String> alphabet = new Alphabet();
 
 	public final Parameter<String> p1 = alphabet.createParameter("p1", String.class);
 	public final Parameter<String> p2 = alphabet.createParameter("p2", String.class);
 
-	public final Symbol1<String> e1 = alphabet.createSymbol1("e1", p1);
-	public final Symbol2<String, String> e2 = alphabet.createSymbol2("e2", p1, p2);
+	public final Symbol1<String,String> e1 = alphabet.createSymbol1("e1", p1);
+	public final Symbol2<String,String, String> e2 = alphabet.createSymbol2("e2", p1, p2);
 
 	public final AwareMatchHandler1<String> matchHandler = AwareMatchHandler.create(p1);
 
-	public final FSM fsm = new FSM(alphabet);
+	public final FSM<String> fsm = new FSM<String>(alphabet);
 
-	public final FSMState initial = fsm.createInitialState();
-	public final FSMState s1 = fsm.createState();
-	public final FSMState error = fsm.createAcceptingState(matchHandler);
+	public final FSMState<String> initial = fsm.createInitialState();
+	public final FSMState<String> s1 = fsm.createState();
+	public final FSMState<String> error = fsm.createAcceptingState(matchHandler);
 
 	public FSM_a_ab_with_initial_ab_loop() {
 	    initial.addTransition(e1, s1);
@@ -62,7 +63,7 @@ public class DefaultParametricMonitor_a_ab_with_initial_ab_loop_Test extends Abs
     @Before
     public void init() {
 	fsm = new FSM_a_ab_with_initial_ab_loop();
-	FiniteSpec finiteSpec = new FSMSpec(fsm.fsm);
+	FiniteSpec finiteSpec = new FSMSpec<String>(fsm.fsm);
 	createDefaultParametricMonitorWithAwareComponents(finiteSpec);
     }
 

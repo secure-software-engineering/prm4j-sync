@@ -29,19 +29,25 @@ public class FSMState <L> extends BaseMonitorState {
 
     public FSMState(int index, Alphabet<L> alphabet, boolean isAccepting, MatchHandler matchHandler, String label) {
 	super(index);
+	//System.out.println("Creating state with index: " + index);
 	this.isAccepting = isAccepting;
 	this.isFinal = true; // a state is final if it has no successor
 	this.label = label;
 	this.alphabet = alphabet;
 	this.matchHandler = matchHandler;
+	//System.out.println("Alphabet size in successor table: " + alphabet.size());
 	successorTable = new FSMState[alphabet.size()];
     }
 
     public void addTransition(Symbol<L> symbol, FSMState<L> successor) {
+		//System.out.println("Entered addTransition of FSMState");
+		//System.out.println("Alphabet params: " + alphabet.getParameters());
+		//System.out.println("Alphabet symbols: " + alphabet.getSymbols());
 	assert successorTable[symbol.getIndex()] == null : "successor already set";
 	if (!alphabet.getSymbols().contains(symbol)) {
 	    throw new IllegalArgumentException("Symbol for transition is not contained in alphabet!");
 	}
+	//System.out.println("Adding successor at " + symbol.getIndex());
 	successorTable[symbol.getIndex()] = successor;
 	isFinal = false;
     }

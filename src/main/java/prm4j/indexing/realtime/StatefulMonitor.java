@@ -47,7 +47,7 @@ public class StatefulMonitor extends BaseMonitor {
 	    return true;
 	}
 	BaseMonitorState oldState = state;
-	System.out.println("From " + state.getIndex());
+	System.out.println("Transition from state: " + state.getIndex());
 	///////////
 	if(this instanceof SyncFSMMonitor){	// Rahul changed this part
 		Symbol<AbstractionAndSymbol> sym = (Symbol<AbstractionAndSymbol>)baseEvent;
@@ -57,7 +57,7 @@ public class StatefulMonitor extends BaseMonitor {
 	state = state.getSuccessor(baseEvent);
 	}
 	//////////
-	System.out.println("To " + state.getIndex());
+	System.out.println("to state: " + state.getIndex());
 	if (state == null) {
 	    terminate();
 	    return false;

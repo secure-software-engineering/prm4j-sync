@@ -74,13 +74,13 @@ public class FiniteParametricPropertyTest extends AbstractTest {
     @Test
     public void getEnablingEventSets_unsafeMapIterator() throws Exception {
 	FSM_SafeMapIterator fsm = new FSM_SafeMapIterator();
-	FiniteParametricProperty fs = new FiniteParametricProperty(new FSMSpec(fsm.fsm));
+	FiniteParametricProperty fs = new FiniteParametricProperty(new FSMSpec<String>(fsm.fsm));
 
 	SetMultimap<BaseEvent, Set<BaseEvent>> actual = fs.getEnablingEventSets();
 
-	SetMultimap<Symbol, Set<Symbol>> expected = HashMultimap.create();
+	SetMultimap<Symbol<String>, Set<Symbol<String>>> expected = HashMultimap.create();
 
-	expected.put(fsm.createColl, Collections.<Symbol> emptySet());
+	expected.put(fsm.createColl, Collections.<Symbol<String>> emptySet());
 
 	// expected.put(u.createIter, Collections.<Symbol> emptySet());
 	expected.put(fsm.createIter, asSet(fsm.createColl));

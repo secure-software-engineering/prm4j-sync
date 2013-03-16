@@ -73,6 +73,10 @@ public abstract class Symbol <L> implements BaseEvent { // Rahul
 	Arrays.sort(parameterMask);
 	this.parameterMask = parameterMask;
 	this.parameterSet = parameterSet;
+	/*System.out.println("Symbol: " + this.getLabel());
+	System.out.println("Parmaters: " + parameters.length);
+	System.out.println("ParameterSet: " + parameterSet.size());
+	System.out.println("ParameterMask: " + parameterMask.length);*/
     }
 
     /**
