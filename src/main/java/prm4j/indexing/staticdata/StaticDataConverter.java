@@ -333,6 +333,11 @@ public class StaticDataConverter {
 	allParameterSets.addAll(pp.getMonitorSetData().keys());
 	allParameterSets.addAll(pp.getPossibleParameterSets());
 	for (Set<Parameter<?>> parameterSet : allParameterSets) {
+	    if (parameterSet.isEmpty()) {
+		metaTree.setChainData(chainData.get(parameterSet));
+		metaTree.setMonitorSetCount(monitorSetIds.row(parameterSet).size());
+		metaTree.setAliveParameterMasks(calculateAliveParameterMasksBoolean(parameterSet));
+	    }
 	    MetaNode node = metaTree;
 	    for (Parameter<?> parameter : Util.asSortedList(parameterSet)) {
 		if (node.getMetaNode(parameter) != null) {
@@ -340,9 +345,7 @@ public class StaticDataConverter {
 		} else {
 		    node = node.createAndGetMetaNode(parameter);
 		    node.setChainData(chainData.get(node.getNodeParameterSet()));
-		    //System.out.println("node parameters: " + node.getNodeParameterSet());
 		    node.setMonitorSetCount(monitorSetIds.row(node.getNodeParameterSet()).size());
-		    //System.out.println("monitorSetIds.row(node.getNodeParameterSet()).size() is " + monitorSetIds.row(node.getNodeParameterSet()).size());
 		    node.setAliveParameterMasks(calculateAliveParameterMasksBoolean(node.getNodeParameterSet()));
 		}
 		metaNodes.add(node);
@@ -444,7 +447,7 @@ public class StaticDataConverter {
     }
 
     protected boolean[] getCreationEvents() {
- 	boolean[] creationEvents = new boolean[pp.getBaseEvents().size()];
+	boolean[] creationEvents = new boolean[pp.getBaseEvents().size()];
 	for (BaseEvent baseEvent : pp.getBaseEvents()) {
 	    creationEvents[baseEvent.getIndex()] = pp.getCreationEvents().contains(baseEvent);
 	}

@@ -100,8 +100,10 @@ public class DefaultNode extends AbstractNode {
 
     @Override
     public MonitorSet getMonitorSet(int monitorSetId) {
-    //System.out.println("Index: " + monitorSetId);
-    //System.out.println("Array size: " + monitorSets.length);
+	if (monitorSetId >= monitorSets.length) {
+	    throw new ArrayIndexOutOfBoundsException("MonitorSet with id " + monitorSetId + " expected in node "
+		    + getMetaNode().getNodeParameterList());
+	}
 	// lazy creation
 	MonitorSet monitorSet = monitorSets[monitorSetId];
 	if (monitorSet == null) {
