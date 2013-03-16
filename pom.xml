@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.parzonka</groupId>
-	<artifactId>prm4j</artifactId>
+	<groupId>de.ec-spride.sse</groupId>
+	<artifactId>prm4j-sync</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>prm4j</name>
+	<name>prm4j-sync</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,7 +38,7 @@
 					<descriptors>
 						<descriptor>src/main/assembly/jar-with-dependencies.xml</descriptor>
 					</descriptors>
-					<finalName>prm4j</finalName>
+					<finalName>prm4j-sync</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>
