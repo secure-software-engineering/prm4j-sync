@@ -1,5 +1,7 @@
 package prm4j.sync;
 
+import java.util.Set;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
@@ -74,8 +76,17 @@ public class MultisetSyncingSpec<L>
 			return new AbstractionAsMultiset(copy);
 		}
 
+		@Override
 		protected boolean isSmallerOrEqualThan(AbstractionAsMultiset other) {
 			return other.symbols.containsAll(symbols);
+		}
+		
+		@Override
+		protected AbstractionAsMultiset abstractionExcludingSymbols(Set<Symbol<L>> syms){
+			Multiset<Symbol<L>> copy = HashMultiset.create();
+			copy.addAll(symbols);
+			copy.removeAll(syms);			
+			return new AbstractionAsMultiset(copy);
 		}
 	}	
 }

@@ -15,7 +15,6 @@ import prm4j.api.BaseEvent;
 import prm4j.api.Event;
 import prm4j.api.MatchHandler;
 import prm4j.api.ParametricMonitor;
-import prm4j.api.Symbol;
 import prm4j.indexing.Monitor;
 import prm4j.indexing.staticdata.ChainData;
 import prm4j.indexing.staticdata.EventContext;
@@ -82,12 +81,9 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 		
 	// wait for a creation event to activate monitoring
 	if (!monitorActivated) {
-		System.out.println("1 " + baseEvent);
 	    if (eventContext.isCreationEvent(baseEvent)) {
-	    	System.out.println("1a");
 		monitorActivated = true;
 	    } else {
-	    	System.out.println("1b");
 		return;
 	    }
 	}
@@ -101,13 +97,10 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	// monitor associated with the instance node. May be null if the instance node is a NullNode
 	Monitor instanceMonitor = instanceNode.getMonitor();
 	//System.out.println("Instance monitor: " + instanceMonitor);
-	System.out.println("2");
 	if (instanceMonitor == null) { // 7
-		System.out.println("3");
 	    // direct update phase
 	    for (MonitorSet monitorSet : instanceNode.getMonitorSets()) { // (30 - 32) new
 		if (monitorSet != null) {
-			System.out.println("4");
 
 		    monitorSet.processEvent(event);
 		}
@@ -115,7 +108,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    findMaxPhase: for (MaxData maxData : eventContext.getMaxData(baseEvent)) { // 8
 		Monitor maxMonitor = nodeStore.getNode(bindings, maxData.getNodeMask()).getMonitor(); // 9
 		if (maxMonitor != null) { // 10
-			System.out.println("5");
 
 		    final long maxMonitorTimestamp = maxMonitor.getTimestamp();
 		    for (int[] disableMask : maxData.getDisableMasks()) {
@@ -130,7 +122,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 		    }
 
 		    if (instanceNode == NullNode.instance) {
-		    	System.out.println("6");
 
 			instanceNode = nodeStore.getOrCreateNode(bindings, parameterMask); // get real
 											   // instance node
@@ -152,7 +143,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    monitorCreation: if (instanceMonitor == null && eventContext.isCreationEvent(baseEvent)) {
 
 		for (int[] existingMonitorMask : eventContext.getExistingMonitorMasks(baseEvent)) {
-			System.out.println("7");
 
 		    Node someNode = nodeStore.getNode(bindings, existingMonitorMask);
 		    if (someNode.getMonitor() != null) {
@@ -161,13 +151,11 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 		}
 
 		if (eventContext.isDisablingEvent(baseEvent)) { // 2
-			System.out.println("8");
 
 
 		    instanceMonitor = new DeadMonitor(timestamp);
 		    nodeStore.getOrCreateNode(bindings, parameterMask).setMonitor(instanceMonitor);
 		} else {
-			System.out.println("9");
 
 		    // inlined DefineNew from 93
 		    instanceMonitor = monitorPrototype.copy(toCompressedBindings(bindings, parameterMask), timestamp);
@@ -213,7 +201,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 			}
 		    }
 		}
-		System.out.println("10");
 
 		// calculate once the bindings to be joined with the whole monitor set
 		final LowLevelBinding[] joinableBindings = createJoinableBindings(bindings,
@@ -225,13 +212,10 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    }
 	} else {
 	    // update phase
-		System.out.println("11");
 
 	    instanceMonitor.process(event); // 30
 	    for (MonitorSet monitorSet : instanceNode.getMonitorSets()) { // 30 - 32
 		if (monitorSet != null) {
-			System.out.println("12");
-
 		    monitorSet.processEvent(event);
 		}
 	    }

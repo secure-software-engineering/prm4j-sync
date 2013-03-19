@@ -1,7 +1,6 @@
 package prm4j.sync;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import com.google.common.collect.Multiset;
@@ -77,6 +76,13 @@ public class SymbolSetSyncingSpec<L>
 		@Override
 		protected boolean isSmallerOrEqualThan(AbstractionBySymbolSet other) {
 			return other.symbols.containsAll(symbols);
+		}
+		
+		@Override
+		protected AbstractionBySymbolSet abstractionExcludingSymbols(Set<Symbol<L>> syms){
+			HashSet<Symbol<L>> copy = new HashSet<Symbol<L>>(symbols);
+			copy.removeAll(syms);			
+			return new AbstractionBySymbolSet(copy);
 		}
 	}	
 }

@@ -8,6 +8,7 @@ import com.google.common.collect.Multiset;
 import prm4j.api.fsm.*;
 import prm4j.api.*;
 
+
 /**
  * An {@link AbstractSyncingSpec} that models the gap of events missed by the number
  * and kind of missed events.
@@ -83,5 +84,13 @@ public class NumberAndSymbolSetSyncingSpec<L>
 		protected boolean isSmallerOrEqualThan(AbstractionBySizeAndSymbols other) {
 			return other.symbols.containsAll(symbols) && other.size>=size;
 		}
+
+		@Override
+		protected AbstractionBySizeAndSymbols abstractionExcludingSymbols(Set<Symbol<L>> syms){
+			HashSet<Symbol<L>> copy = new HashSet<Symbol<L>>(symbols);
+			copy.removeAll(syms);			
+			return new AbstractionBySizeAndSymbols(size, copy);
+		}
+		
 	}	
 }

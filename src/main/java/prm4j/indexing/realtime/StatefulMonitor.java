@@ -48,19 +48,23 @@ public class StatefulMonitor extends BaseMonitor {
 	    return true;
 	}
 	BaseMonitorState oldState = state;
-	System.out.println("Transition from state: " + state.getIndex());
+	//System.out.println("Transition from state: " + state.getIndex());
 	///////////
 	if(this instanceof SyncFSMMonitor){	// Rahul changed this part
 		Symbol<AbstractionAndSymbol> sym = (Symbol<AbstractionAndSymbol>)baseEvent;
 		SyncState syncState = (SyncState)state;
 		state = syncState.getSuccessor(sym);
-	    if(state == null)
-	    	 System.out.println("state is null");
 	} else {
 		state = state.getSuccessor(baseEvent);
 	}
 	//////////
-	System.out.println("to state: " + state.getIndex());
+	
+	// Rahul: See if this patch works
+	if(state == null)
+		state = oldState;
+	//////////////////
+	
+	//System.out.println("to state: " + state.getIndex());
 	if (state == null) {
 	    terminate();
 	    return false;

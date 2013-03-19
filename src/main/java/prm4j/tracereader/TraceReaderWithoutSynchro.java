@@ -7,33 +7,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-//import org.junit.Before;
-
-import prm4j.api.BaseEvent;
 import prm4j.api.Event;
 import prm4j.api.Parameter;
 import prm4j.api.ParametricMonitor;
 import prm4j.api.ParametricMonitorFactory;
 import prm4j.api.Symbol;
-import prm4j.api.fsm.FSM;
 import prm4j.api.fsm.FSMSpec;
-import prm4j.spec.FiniteParametricProperty;
-import prm4j.sync.AbstractSyncingSpec;
-import prm4j.sync.FullSyncingSpec;
-import prm4j.sync.MultisetSyncingSpec;
-import prm4j.sync.NumberAndSymbolSetSyncingSpec;
-import prm4j.sync.NumberSyncingSpec;
-import prm4j.sync.SymbolSetSyncingSpec;
-//import prm4j.util.FSMDefinitions;
+
 import prm4j.util.*;
-//import prm4j.util.FSMDefinitions.FSM_HasNext;
-
-import com.google.common.collect.Multiset;
-
 
 /*
  * This is a variant of the Hello World example in which events are read from a file.
@@ -95,7 +78,7 @@ public class TraceReaderWithoutSynchro {
 			Set<Parameter<?>> params = symbol.getParameters();
 			Iterator<Parameter<?>> it = params.iterator();
 			while(it.hasNext()){
-				Parameter param = it.next();				
+				Parameter<?> param = it.next();				
 				int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
 				parameterValues[param.getIndex()] = Long.parseLong(split[trInd +1]);
 				//System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index " + "trInd: " + trInd);
@@ -112,7 +95,7 @@ public class TraceReaderWithoutSynchro {
 	
 	}
 	
-	protected static Parameter getParam(Set<Parameter<?>> params, int index){
+	protected static Parameter<?> getParam(Set<Parameter<?>> params, int index){
 		Iterator<Parameter<?>> it = params.iterator();
 		while(it.hasNext()){
 			Parameter<?> param = it.next();

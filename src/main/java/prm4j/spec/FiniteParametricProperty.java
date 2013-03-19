@@ -32,9 +32,7 @@ import prm4j.Util;
 import prm4j.Util.Tuple;
 import prm4j.api.BaseEvent;
 import prm4j.api.Parameter;
-import prm4j.api.Symbol;
 import prm4j.indexing.BaseMonitorState;
-import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;

@@ -123,7 +123,7 @@ public class TraceReaderWithSynchro {
 						
 			//System.out.println("Creating Event: " + symbol.getLabel() + " with " + parameterValues[0] + " " + parameterValues[parameterValues.length - 1]);
 			Event e = new Event(symbol, parameterValues);
-			System.out.println("\nProcessing event " + ((Symbol<String>)e.getBaseEvent()).getLabel());
+			System.out.print("\n" + ((Symbol<String>)e.getBaseEvent()).getLabel());
 			it = params.iterator();
 			Parameter param1;
 			Parameter param2;
@@ -131,12 +131,14 @@ public class TraceReaderWithSynchro {
 			
 			if(it.hasNext()){
 				param1 = it.next();
-				System.out.println("Bound object for param " + param1 + " is " + e.getBoundObject(param1.getIndex())); 
+				System.out.print(" " + e.getBoundObject(param1.getIndex())); 
 			}
 			if(it.hasNext()){
 				param2 = it.next();
-				System.out.println("Bound object for param " + param2 + " is " + e.getBoundObject(param2.getIndex())); 
+				System.out.print(" " + e.getBoundObject(param2.getIndex())); 
 			}
+			
+			System.out.println("");
 			
 			syncingSpec.maybeProcessEvent(e);
 		}

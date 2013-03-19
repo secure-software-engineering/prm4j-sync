@@ -1,5 +1,7 @@
 package prm4j.sync;
 
+import java.util.Set;
+
 import com.google.common.collect.Multiset;
 
 import prm4j.api.fsm.*;
@@ -67,6 +69,11 @@ public class FullSyncingSpec<L>
 		@Override
 		protected boolean isSmallerOrEqualThan(FullAbstraction other) {
 			return !skippedSomething;
+		}
+		
+		@Override
+		protected FullAbstraction abstractionExcludingSymbols(Set<Symbol<L>> syms){
+			return this;
 		}
 		
 	}
