@@ -1,6 +1,7 @@
 package prm4j.sync;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import com.google.common.collect.Multiset;
@@ -13,6 +14,7 @@ import prm4j.api.*;
  */
 public class SymbolSetSyncingSpec<L>
 	extends DefaultSyncingSpec<L, SymbolSetSyncingSpec<L>.AbstractionBySymbolSet>{
+	
 		
 	public SymbolSetSyncingSpec(FSMSpec<L> delegate) {
 		super(delegate);
@@ -21,6 +23,7 @@ public class SymbolSetSyncingSpec<L>
 	protected AbstractionBySymbolSet abstraction(Multiset<Symbol<L>> symbols) {
 		return new AbstractionBySymbolSet(symbols.elementSet());
 	}
+
 
 	public class AbstractionBySymbolSet
 		extends AbstractSyncingSpec<L,AbstractionBySymbolSet>.SymbolMultisetAbstraction {
@@ -31,6 +34,7 @@ public class SymbolSetSyncingSpec<L>
 			this.symbols = symbols;
 		}
 		
+	
 		@Override
 		public String toString() {
 			return symbols.toString();

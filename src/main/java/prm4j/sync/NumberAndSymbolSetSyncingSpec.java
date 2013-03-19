@@ -23,6 +23,7 @@ public class NumberAndSymbolSetSyncingSpec<L>
 	protected AbstractionBySizeAndSymbols abstraction(Multiset<Symbol<L>> symbols) {
 		return new AbstractionBySizeAndSymbols(symbols.size(),symbols.elementSet());
 	}
+	
 
 	public class AbstractionBySizeAndSymbols
 		extends AbstractSyncingSpec<L,AbstractionBySizeAndSymbols>.SymbolMultisetAbstraction {
@@ -34,6 +35,7 @@ public class NumberAndSymbolSetSyncingSpec<L>
 			this.size = size;
 			this.symbols = symbols;
 		}
+		
 
 		@Override
 		public String toString() {

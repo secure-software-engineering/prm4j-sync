@@ -53,7 +53,7 @@ public class FSMState <L> extends BaseMonitorState {
     }
 
    public BaseMonitorState getSuccessor(BaseEvent baseEvent) {
-    	//System.out.println("Entered FSMState's getSuccessor");
+    	//System.out.println("Entered FSMState's getSuccessor" + baseEvent.getIndex());    	
 	return successorTable[baseEvent.getIndex()];
     }
     

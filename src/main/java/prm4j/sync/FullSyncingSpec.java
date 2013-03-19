@@ -11,9 +11,6 @@ import prm4j.api.*;
 public class FullSyncingSpec<L>
 	extends DefaultSyncingSpec<L, FullSyncingSpec<L>.FullAbstraction>{
 		
-	/*public FullSyncingTemplate(OpenFSMMonitorTemplate<L> delegate) {
-		super(delegate);
-	}*/
 	
 	public FullSyncingSpec(FSMSpec<L> delegate) {
 		super(delegate);
@@ -23,8 +20,8 @@ public class FullSyncingSpec<L>
 		return new FullAbstraction(!symbols.isEmpty());
 	}
 	
+	
 	public class FullAbstraction
-		//extends AbstractSyncingFSMMonitorTemplate<L,K,V,FullAbstraction>.SymbolMultisetAbstraction {
 	extends AbstractSyncingSpec<L, FullAbstraction>.SymbolMultisetAbstraction {
 
 		private final boolean skippedSomething;
@@ -71,7 +68,7 @@ public class FullSyncingSpec<L>
 		protected boolean isSmallerOrEqualThan(FullAbstraction other) {
 			return !skippedSomething;
 		}
-
+		
 	}
 		
 }

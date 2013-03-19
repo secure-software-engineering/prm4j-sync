@@ -57,7 +57,9 @@ public class TraceReaderWithSynchro {
 			fsm_base = new FSM_HasNext(criticalSymbolApplication);
 		} else if(propName.equals("fsi")) {
 			fsm_base = new FSM_SafeIterator(criticalSymbolApplication);
-		} else{
+		} else if(propName.equals("tokenizer")) {
+			fsm_base = new FSM_StringTokenizer(criticalSymbolApplication);
+		}else{
 			throw new IllegalArgumentException("invalid monitor spec: "+propName);
 		}
 

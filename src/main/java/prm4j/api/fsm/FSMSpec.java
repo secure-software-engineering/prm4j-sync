@@ -61,7 +61,7 @@ public class FSMSpec<L> implements FiniteSpec {
     		alphabet.addCopiedParameter(param);
     	}
     	criticalSymbols = fs.criticalSymbols();	// Rahul
-    	System.out.println("FSMSpec's critical symbol details:");
+    	System.out.println("Delegate FSMSpec's critical symbol details:");
 		for(BaseEvent base: criticalSymbols){
 			@SuppressWarnings("unchecked")
 			Symbol<L> sym = (Symbol<L>)base;

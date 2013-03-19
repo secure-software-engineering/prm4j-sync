@@ -19,6 +19,7 @@ public class MultisetSyncingSpec<L>
 	protected AbstractionAsMultiset abstraction(Multiset<Symbol<L>> symbols) {
 		return new AbstractionAsMultiset(symbols);
 	}
+	
 
 	public class AbstractionAsMultiset
 		extends AbstractSyncingSpec<L, AbstractionAsMultiset>.SymbolMultisetAbstraction {
@@ -28,6 +29,7 @@ public class MultisetSyncingSpec<L>
 		public AbstractionAsMultiset(Multiset<Symbol<L>> symbols) {
 			this.symbols = symbols;
 		}
+		
 
 		public Multiset<Symbol<L>> getSymbols() {
 			return symbols;

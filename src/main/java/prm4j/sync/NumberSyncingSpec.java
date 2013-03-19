@@ -11,10 +11,6 @@ import prm4j.api.*;
  */
 public class NumberSyncingSpec<L>
 	extends DefaultSyncingSpec<L, NumberSyncingSpec<L>.AbstractionBySize>{
-		
-	/*public NumberSyncingTemplate(OpenFSMMonitorTemplate<L, K, V> delegate) {
-		super(delegate);
-	}*/
 	
 	public NumberSyncingSpec(FSMSpec<L> delegate) {
 		super(delegate);
@@ -23,6 +19,7 @@ public class NumberSyncingSpec<L>
 	protected AbstractionBySize abstraction(Multiset<Symbol<L>> symbols) {
 		return new AbstractionBySize(symbols.size());
 	}
+	
 
 	public class AbstractionBySize
 		extends AbstractSyncingSpec<L,AbstractionBySize>.SymbolMultisetAbstraction {
@@ -32,6 +29,7 @@ public class NumberSyncingSpec<L>
 		protected AbstractionBySize(int size) {
 			this.size = size;
 		}
+		
 		
 		@Override
 		public String toString() {

@@ -38,12 +38,13 @@ public class StatefulMonitor extends BaseMonitor {
     //System.out.println("Type of this monitor is " + this.getClass().getName());
 	if (state == null) {
 	    terminate();
+	    System.out.println("returning false");
 	    return false;
 	}
 	final BaseEvent baseEvent = event.getEvaluatedBaseEvent(this);
-	//final Symbol baseEvent = (Symbol)event.getEvaluatedBaseEvent(this);	//Rahul
 	if (baseEvent == null) {
 	    // the condition evaluated to false, no transition is taken, monitor was alive => stays alive
+	    System.out.println("returning true");
 	    return true;
 	}
 	BaseMonitorState oldState = state;
@@ -53,8 +54,10 @@ public class StatefulMonitor extends BaseMonitor {
 		Symbol<AbstractionAndSymbol> sym = (Symbol<AbstractionAndSymbol>)baseEvent;
 		SyncState syncState = (SyncState)state;
 		state = syncState.getSuccessor(sym);
+	    if(state == null)
+	    	 System.out.println("state is null");
 	} else {
-	state = state.getSuccessor(baseEvent);
+		state = state.getSuccessor(baseEvent);
 	}
 	//////////
 	System.out.println("to state: " + state.getIndex());
