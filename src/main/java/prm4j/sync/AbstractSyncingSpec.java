@@ -83,7 +83,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	/**
 	 * The multiset of skipped events.
 	 */
-	//protected Multiset<Symbol<L>> skippedSymbols = HashMultiset.create();
+	protected Multiset<Symbol<L>> skippedSymbols = HashMultiset.create();
 	
 	/**
 	 * The intersection of the variable bindings of skipped events.
@@ -106,7 +106,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 * on or off during any given sampling period. We use a deterministic seed for
 	 * reproducibility. 
 	 */
-	protected final Random random = new Random();
+	protected final Random random;
 	
 	/**
 	 * The length of any sampling period.
@@ -129,13 +129,17 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	protected boolean processEventsInCurrentPeriod;
 	
 	protected final Set<Symbol<L>> criticalSymbols;
-	
-	protected Multiset<Symbol<L>> skippedSymbols = HashMultiset.create();
-	
+		
 	protected A maxAbstraction = abstraction(EMPTY);
 	
 	
+	protected abstract void updateHistory(Symbol<L> sym);
 	
+	protected abstract void deleteHistory();
+	
+	protected Map<Symbol<L>,Symbol<AbstractionAndSymbol>> symbolWithEmptyAbstraction = new HashMap<Symbol<L>,Symbol<AbstractionAndSymbol>>();
+	
+	protected Map<Symbol<L>,Symbol<AbstractionAndSymbol>> symbolWithMaxAbstraction = new HashMap<Symbol<L>,Symbol<AbstractionAndSymbol>>();	
 
 	
 	/**
@@ -145,13 +149,23 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	public AbstractSyncingSpec(FSMSpec<L> delegate) 	{
 		super(delegate);
 		this.delegate = delegate;
-		this.samplingPeriod = samplingPeriod();
-		this.skipPeriod = (int) (1.0d/samplingRate() - 1) * samplingPeriod; 
+
 		this.criticalSymbols = delegate.criticalSymbols();
 		//this.alphabet = createAlphabet();	// Rahul
 		this.initialState = setupStatesAndTransitions();
 		this.parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
 		maxAbstraction = maxAbstraction.abstractionExcludingSymbols(criticalSymbols);
+		
+		this.samplingPeriod = samplingPeriod();
+		System.out.println("sampling period:" + samplingPeriod);
+		this.skipPeriod = (int) ((1.0d/samplingRate() - 1) * samplingPeriod); 
+		System.out.println("skip period:" + skipPeriod);
+		
+		if(this.seed <= 0)
+			random = new Random();
+		else
+			random = new Random(seed);
+		
 		printSyncSpec();
 	}
 
@@ -179,6 +193,11 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		System.out.println("\nParameters: " + parameters);
 		System.out.println("States: " + states);
 		System.out.println("Initial state: " + initialState);
+		System.out.println("Sampling rate: " + samplingRate);
+		if(seed <= 0)
+			System.out.println("No seed specified.");
+		else
+			System.out.println("Seed: " + seed);
 		System.out.println("Maximum Abstraction: " + maxAbstraction);
 		System.out.println("///////////////////////////////\n");
 
@@ -457,28 +476,30 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	public void maybeProcessEvent(Event e) {
 		Symbol<L> symbol = (Symbol<L>)(e.getBaseEvent());
 		if(shouldMonitor(symbol)) {
-			System.out.println("*");
+			//System.out.println("*");
 			if(!didMonitorLastEvent)
 				reenableTime++;
 			//We need to build the abstraction later, specific to a monitor so do it inside SyncMonitor.
-			e.setBaseEvent(getAlphabet().getSymbolByLabel(new AbstractionAndSymbol(abstraction(EMPTY), symbol)));
-			//System.out.println("Symbol Type is " + ((Symbol<AbstractionAndSymbol>)e.getBaseEvent()).getLabel().getSymbol().getLabel());
+			Symbol<AbstractionAndSymbol> sym = symbolWithEmptyAbstraction.get(symbol);
+			if(sym == null){
+				Symbol<AbstractionAndSymbol> targetSymbol = getAlphabet().getSymbolByLabel(new AbstractionAndSymbol(abstraction(EMPTY), symbol));
+				e.setBaseEvent(targetSymbol);
+				symbolWithEmptyAbstraction.put(symbol, targetSymbol);
+			} else
+				e.setBaseEvent(sym);
 			parametricMonitor.processEvent(e);
-			skippedSymbols.clear();
-			//System.out.println("SkippedSymbols cleared");
 			didMonitorLastEvent = true;
 		} else {
-			skippedSymbols.add(symbol);
-			//for(Symbol<L> sym: skippedSymbols)
-				//System.out.println("SkippedSymbol: " + sym.getLabel());
-			//updateHistory(symbol);
+			if(didMonitorLastEvent)
+				deleteHistory();
+			updateHistory(symbol);
 			didMonitorLastEvent = false;
 		}
 	}
 	
 
 	/**
-	 * Returns the lenght of a sampling period for this monitor template. This size may actually depend on the 
+	 * Returns the length of a sampling period for this monitor template. This size may actually depend on the 
 	 * size or structure of the delegate, i.e., the property to be monitored.
 	 */
 	abstract protected int samplingPeriod();
@@ -503,14 +524,11 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 */
 
 	protected boolean shouldMonitor(Symbol<L> symbol){	
-		//Random random = new Random();
 		if(phase==0) {
 			processEventsInCurrentPeriod = random.nextBoolean();
 		}
 		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
 		phase = (phase+1) % periodLength;
-		//System.out.println(processEventsInCurrentPeriod?"Should Monitor.":"Should not monitor.");
-		//return processEventsInCurrentPeriod;
 		return processEventsInCurrentPeriod || criticalSymbols.contains(symbol);
 		//return true;
 	}
@@ -625,32 +643,30 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		public boolean processEvent(Event e) {
 			//as input we get a syncing symbol; now we must check whether we actually need
 			//to sync; if not, then we modify the symbol to a non-syncing one
-			//System.out.println("Calling processEvent of SyncFSMMonitor");
-			//System.out.println("Processing Incoming event: ");
-			//System.out.println("Abstraction: " + ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getAbstraction()); 
-			//System.out.println("Symbol: " + ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol().getLabel()); 
-			
-			BaseEvent be = e.getBaseEvent();
+
+			BaseEvent be;
 			boolean status;
 			
 			if(reenableTime==lastAccess) {
 				// don't sync
-				// e.setBaseEvent(getAlphabet().getSymbolByLabel((new AbstractionAndSymbol(abstraction(EMPTY), ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol()))));
 				status = super.processEvent(e);
 			} else if(reenableTime == (lastAccess + 1)){
 				lastAccess = reenableTime;
-				e.setBaseEvent(getAlphabet().getSymbolByLabel((new AbstractionAndSymbol(abstraction(skippedSymbols), ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol()))));
-				//System.out.println("Processing modified event: "); 
-				//System.out.println("Abstraction: " + ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getAbstraction()); 
-				//System.out.println("Symbol: " + ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol().getLabel()); 
+				be = e.getBaseEvent();
+				e.setBaseEvent(getAlphabet().getSymbolByLabel((new AbstractionAndSymbol(abstraction(skippedSymbols), ((Symbol<AbstractionAndSymbol>)be).getLabel().getSymbol()))));
 				status = super.processEvent(e);
 				e.setBaseEvent(be);
 			} else {
 				lastAccess = reenableTime;
-				e.setBaseEvent(getAlphabet().getSymbolByLabel((new AbstractionAndSymbol(maxAbstraction, ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol()))));
-				//System.out.println("Processing modified event: "); 
-				//System.out.println("Abstraction: " + ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getAbstraction()); 
-				//System.out.println("Symbol: " + ((Symbol<AbstractionAndSymbol>)(e.getBaseEvent())).getLabel().getSymbol().getLabel()); 
+				be = e.getBaseEvent();
+				Symbol<L> baseSymbol = ((Symbol<AbstractionAndSymbol>)be).getLabel().getSymbol();
+				Symbol<AbstractionAndSymbol> sym = symbolWithMaxAbstraction.get(baseSymbol);
+				if(sym == null){
+					Symbol<AbstractionAndSymbol> targetSymbol = getAlphabet().getSymbolByLabel(new AbstractionAndSymbol(maxAbstraction, baseSymbol));
+					e.setBaseEvent(targetSymbol);
+					symbolWithMaxAbstraction.put(baseSymbol, targetSymbol);
+				} else
+					e.setBaseEvent(sym);
 				status = super.processEvent(e);
 				e.setBaseEvent(be);
 			}

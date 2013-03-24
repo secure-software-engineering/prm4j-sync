@@ -30,6 +30,8 @@ public class FSMSpec<L> implements FiniteSpec {
 
 	protected Alphabet<L> alphabet; // Rahul
 	protected Set<Symbol<L>> criticalSymbols; // Rahul
+	protected double samplingRate; // Rahul
+	protected int seed; // Rahul
 	protected Set<BaseEvent> baseEvents;
     protected Set<Parameter<?>> parameters;
     protected Set<BaseMonitorState> states;
@@ -50,11 +52,15 @@ public class FSMSpec<L> implements FiniteSpec {
 	}
     }
     
+    public FSMSpec(FSM<L> fsm, double samplingRate, int seed){
+    	this(fsm);
+    	this.samplingRate = samplingRate;
+    	this.seed = seed;
+    }
+    
     public FSMSpec(FSMSpec fs) {	// Rahul
-    	//baseEvents = fs.getBaseEvents();
     	baseEvents = new HashSet<BaseEvent>();
     	parameters = fs.getFullParameterSet();
-    	//states = fs.getStates();
     	states = new HashSet<BaseMonitorState>();
     	alphabet = new Alphabet();
     	for(Parameter<?> param: parameters){
@@ -67,6 +73,8 @@ public class FSMSpec<L> implements FiniteSpec {
 			Symbol<L> sym = (Symbol<L>)base;
 			System.out.println("sym label: " + sym.getLabel());			
 		}
+		samplingRate = fs.samplingRate;
+		seed = fs.seed;
     }
     
     

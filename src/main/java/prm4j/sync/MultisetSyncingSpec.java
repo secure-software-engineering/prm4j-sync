@@ -22,6 +22,16 @@ public class MultisetSyncingSpec<L>
 		return new AbstractionAsMultiset(symbols);
 	}
 	
+	@Override
+	protected void updateHistory(Symbol<L> sym){
+		skippedSymbols.add(sym);
+	}
+	
+	@Override
+	protected void deleteHistory(){
+		skippedSymbols.clear();
+	}
+	
 
 	public class AbstractionAsMultiset
 		extends AbstractSyncingSpec<L, AbstractionAsMultiset>.SymbolMultisetAbstraction {

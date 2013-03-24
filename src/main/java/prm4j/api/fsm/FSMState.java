@@ -41,8 +41,8 @@ public class FSMState <L> extends BaseMonitorState {
 
     public void addTransition(Symbol<L> symbol, FSMState<L> successor) {
 		//System.out.println("Entered addTransition of FSMState");
-		//System.out.println("Alphabet params: " + alphabet.getParameters());
-		//System.out.println("Alphabet symbols: " + alphabet.getSymbols());
+    	System.out.println("Adding Transition: from " + this.getIndex() + " using " + symbol.getIndex() + " to " + successor.getIndex());
+
 	assert successorTable[symbol.getIndex()] == null : "successor already set";
 	if (!alphabet.getSymbols().contains(symbol)) {
 	    throw new IllegalArgumentException("Symbol for transition is not contained in alphabet!");

@@ -36,6 +36,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 
     protected final ParametricMonitorLogger logger;
 
+    public static long counter = 0;
     /**
      * Creates a DefaultParametricMonitor using default {@link BindingStore} and {@link NodeStore} implementations (and
      * configurations).
@@ -101,7 +102,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    // direct update phase
 	    for (MonitorSet monitorSet : instanceNode.getMonitorSets()) { // (30 - 32) new
 		if (monitorSet != null) {
-
 		    monitorSet.processEvent(event);
 		}
 	    }
@@ -143,7 +143,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    monitorCreation: if (instanceMonitor == null && eventContext.isCreationEvent(baseEvent)) {
 
 		for (int[] existingMonitorMask : eventContext.getExistingMonitorMasks(baseEvent)) {
-
 		    Node someNode = nodeStore.getNode(bindings, existingMonitorMask);
 		    if (someNode.getMonitor() != null) {
 			break monitorCreation;
@@ -151,8 +150,6 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 		}
 
 		if (eventContext.isDisablingEvent(baseEvent)) { // 2
-
-
 		    instanceMonitor = new DeadMonitor(timestamp);
 		    nodeStore.getOrCreateNode(bindings, parameterMask).setMonitor(instanceMonitor);
 		} else {
@@ -177,6 +174,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    
 	    // inlined Join from 42
 	    joinPhase: for (JoinData joinData : eventContext.getJoinData(baseEvent)) { // 43
+	    	counter++;
 
 		// if node does not exist there can't be any joinable monitors
 		final Node compatibleNode = nodeStore.getNode(bindings, joinData.getNodeMask());
@@ -213,7 +211,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	} else {
 	    // update phase
 
-	    instanceMonitor.process(event); // 30
+	    //instanceMonitor.process(event); // 30
 	    for (MonitorSet monitorSet : instanceNode.getMonitorSets()) { // 30 - 32
 		if (monitorSet != null) {
 		    monitorSet.processEvent(event);
@@ -227,6 +225,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    logger.log(timestamp);
 	}
 	timestamp++; // 40
+	
     }
 
     private static LowLevelBinding[] toCompressedBindings(LowLevelBinding[] uncompressedBindings, int[] parameterMask) {

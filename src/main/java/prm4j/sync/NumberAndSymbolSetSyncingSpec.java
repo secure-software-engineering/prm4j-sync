@@ -25,6 +25,16 @@ public class NumberAndSymbolSetSyncingSpec<L>
 		return new AbstractionBySizeAndSymbols(symbols.size(),symbols.elementSet());
 	}
 	
+	@Override
+	protected void updateHistory(Symbol<L> sym){
+		skippedSymbols.add(sym);
+	}
+	
+	@Override
+	protected void deleteHistory(){
+		skippedSymbols.clear();
+	}
+	
 
 	public class AbstractionBySizeAndSymbols
 		extends AbstractSyncingSpec<L,AbstractionBySizeAndSymbols>.SymbolMultisetAbstraction {

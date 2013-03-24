@@ -17,6 +17,8 @@ public class DefaultNodeStore implements NodeStore {
     private final MetaNode metaTree;
 
     private volatile Node rootNode;
+    
+	//public static long counter = 0;
 
     public DefaultNodeStore(MetaNode metaTree, NodeManager nodeManager) {
 	this.metaTree = metaTree;
@@ -41,6 +43,7 @@ public class DefaultNodeStore implements NodeStore {
 	// we iterate over the rest { node1 , ..., nodeN }, traversing the tree
 	for (int i = 0; i < parameterMask.length; i++) {
 	    // traverse the node tree until the parameter instance is fully realized
+		//counter++;
 	    node = node.getOrCreateNode(parameterMask[i], bindings[parameterMask[i]]);
 	}
 	return node;

@@ -103,11 +103,9 @@ public class FiniteParametricProperty implements ParametricProperty {
 	BaseMonitorState initialState = finiteSpec.getInitialState();
 	for (BaseEvent symbol : finiteSpec.getBaseEvents()) {
 	    BaseMonitorState successor = initialState.getSuccessor(symbol);
-	    if (successor != initialState) {
-	    	//System.out.println("Adding creation symbol " + ((Symbol)symbol).getLabel());
-		creationEvents.add(symbol);
-	    } //else
-	    	//System.out.println("Not adding creation symbol " + ((Symbol)symbol).getLabel());
+	    if (successor != initialState) {	    	
+	    	creationEvents.add(symbol);
+	    } 
 	}
 	return creationEvents;
     }

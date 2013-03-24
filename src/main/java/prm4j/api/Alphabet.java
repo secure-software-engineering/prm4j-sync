@@ -49,14 +49,15 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 	
 	public Symbol<L> getSymbolByLabel(L l) {
 		//System.out.println("Calling getSymbolByLabel with " + l);
-		for (Symbol<L> sym : this) {
+		/*for (Symbol<L> sym : this) {
 			if(sym.getLabel().equals(l)) {
 				return sym;
 			}
-		}
+		}*/
+		//System.out.println("////////////////");
+		//System.out.println("Calling getSymbolByLabel with " + l);
 		/////////////////////////// Rahul added this
 		if(l instanceof AbstractionAndSymbol){
-			//System.out.println("Calling getSymbolByLabel for AbstractionAndSymbol with " + l);
 			Symbol<L> sym = labelToSymbol.get(l);
 			if(sym==null) {
 				Set<Parameter<?>> params = ((AbstractionAndSymbol)l).getSymbol().getParameters();
@@ -84,9 +85,31 @@ public class Alphabet<L> implements Iterable<Symbol<L>>{
 				//System.out.println("Symbol added is: " + sym.getLabel());
 				
 			}
+			//System.out.println("Symbol returned is: " + sym.getLabel());
 			return sym;
 		}
 		////////////////////////////
+		/*System.out.println("Calling getSymbolByLabel with " + l);
+		for (Symbol<L> sym : this) {	
+			System.out.println("2");
+			if(sym.getLabel().equals(l)) {
+				System.out.println("Symbol returned is: " + sym.getLabel());
+				return sym;
+			}
+		}
+		System.out.println("////////////////");*/
+		Symbol<L> symbol = labelToSymbol.get(l);
+		if(symbol == null){
+			for (Symbol<L> sym : this) {	
+				if(sym.getLabel().equals(l)) {
+					//System.out.println("Symbol returned is: " + sym.getLabel());
+					labelToSymbol.put(l, sym);		
+					return sym;
+				}
+			}
+		}else
+			return symbol;
+		
 		throw new IllegalArgumentException("Unknown symbol:" +l);
 	}
 

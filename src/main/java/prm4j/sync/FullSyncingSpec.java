@@ -22,6 +22,14 @@ public class FullSyncingSpec<L>
 		return new FullAbstraction(!symbols.isEmpty());
 	}
 	
+	@Override
+	protected void updateHistory(Symbol<L> sym){
+	}
+	
+	@Override
+	protected void deleteHistory(){
+	}
+	
 	
 	public class FullAbstraction
 	extends AbstractSyncingSpec<L, FullAbstraction>.SymbolMultisetAbstraction {

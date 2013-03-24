@@ -15,12 +15,11 @@ import prm4j.api.BaseEvent;
 import prm4j.api.Event;
 import prm4j.api.MatchHandler;
 import prm4j.api.Symbol;
-import prm4j.api.fsm.FSMState;
 import prm4j.indexing.BaseMonitorState;
 import prm4j.indexing.Monitor;
 import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
-import prm4j.sync.AbstractSyncingSpec.SyncFSMMonitor;
 import prm4j.sync.AbstractSyncingSpec.SyncState;
+import prm4j.sync.AbstractSyncingSpec.SyncFSMMonitor;
 
 /**
  * A base monitor holding a {@link BaseMonitorState} which is updated when processing {@link BaseEvent}s.
@@ -38,36 +37,32 @@ public class StatefulMonitor extends BaseMonitor {
     //System.out.println("Type of this monitor is " + this.getClass().getName());
 	if (state == null) {
 	    terminate();
-	    System.out.println("returning false");
+	    //System.out.println("returning false");
 	    return false;
 	}
 	final BaseEvent baseEvent = event.getEvaluatedBaseEvent(this);
 	if (baseEvent == null) {
 	    // the condition evaluated to false, no transition is taken, monitor was alive => stays alive
-	    System.out.println("returning true");
+	    //System.out.println("returning true");
 	    return true;
 	}
 	BaseMonitorState oldState = state;
 	//System.out.println("Transition from state: " + state.getIndex());
-	///////////
-	if(this instanceof SyncFSMMonitor){	// Rahul changed this part
+	
+	if(this instanceof SyncFSMMonitor){
 		Symbol<AbstractionAndSymbol> sym = (Symbol<AbstractionAndSymbol>)baseEvent;
-		SyncState syncState = (SyncState)state;
+		SyncState syncState = (SyncState)oldState;
 		state = syncState.getSuccessor(sym);
+		//System.out.println("Symbol: " + sym.getLabel()); 
 	} else {
 		state = state.getSuccessor(baseEvent);
 	}
-	//////////
-	
-	// Rahul: See if this patch works
-	if(state == null)
-		state = oldState;
-	//////////////////
 	
 	//System.out.println("to state: " + state.getIndex());
-	if (state == null) {
-	    terminate();
-	    return false;
+
+	if (state == null) { // Rahul changed it
+			terminate();
+			return false;
 	}
 	MatchHandler matchHandler = state.getMatchHandler();
 	if (matchHandler != null) {

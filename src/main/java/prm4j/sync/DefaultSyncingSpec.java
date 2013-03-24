@@ -9,11 +9,12 @@ public abstract class DefaultSyncingSpec<L, A extends AbstractSyncingSpec<L, A>.
 
 	@Override
 	protected int samplingPeriod() {
-		return getStates().size()+2;
+		System.out.println("States size: " + getStates().size());
+		return getStates().size()+4;
 	}
 
 	@Override
 	protected double samplingRate() {
-		return 0.5d;
+		return samplingRate;
 	}
 }

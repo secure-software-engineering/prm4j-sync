@@ -48,7 +48,7 @@ public class FSM_SafeIterator implements FSM_Base{
     public final FSMState initial = fsm.createInitialState();
     public final FSMState s1 = fsm.createState();
     public final FSMState s2 = fsm.createState();
-    //public final FSMState s3 = fsm.createState();
+    //public final FSMState trap = fsm.createState();
     public final FSMState error = fsm.createAcceptingState(matchHandler);
     
     
@@ -68,6 +68,10 @@ public class FSM_SafeIterator implements FSM_Base{
 	s1.addTransition(updateColl, s2);
 	s2.addTransition(updateColl, s2);
 	s2.addTransition(useIter, error);
+	
+	// newly added for completeness as required by synchro
+	//initial.addTransition(useIter, trap);
+	////
 	
 	if(criticalSymbolApplication)
 		fsm.addCriticalSymbol(createIter);

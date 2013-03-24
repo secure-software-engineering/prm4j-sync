@@ -22,6 +22,16 @@ public class SymbolSetSyncingSpec<L>
 	protected AbstractionBySymbolSet abstraction(Multiset<Symbol<L>> symbols) {
 		return new AbstractionBySymbolSet(symbols.elementSet());
 	}
+	
+	@Override
+	protected void updateHistory(Symbol<L> sym){
+		skippedSymbols.add(sym);
+	}
+	
+	@Override
+	protected void deleteHistory(){
+		skippedSymbols.clear();
+	}
 
 
 	public class AbstractionBySymbolSet

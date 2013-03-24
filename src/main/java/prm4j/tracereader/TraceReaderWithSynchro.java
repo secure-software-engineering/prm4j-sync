@@ -7,39 +7,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-//import org.junit.Before;
-
-import prm4j.api.BaseEvent;
 import prm4j.api.Event;
 import prm4j.api.Parameter;
 import prm4j.api.Symbol;
-import prm4j.api.fsm.FSM;
 import prm4j.api.fsm.FSMSpec;
-import prm4j.spec.FiniteParametricProperty;
+import prm4j.indexing.realtime.DefaultNodeStore;
+import prm4j.indexing.realtime.DefaultParametricMonitor;
 import prm4j.sync.AbstractSyncingSpec;
 import prm4j.sync.FullSyncingSpec;
 import prm4j.sync.MultisetSyncingSpec;
 import prm4j.sync.NumberAndSymbolSetSyncingSpec;
 import prm4j.sync.NumberSyncingSpec;
 import prm4j.sync.SymbolSetSyncingSpec;
-//import prm4j.util.FSMDefinitions;
 import prm4j.util.*;
-//import prm4j.util.FSMDefinitions.FSM_HasNext;
-
-import com.google.common.collect.Multiset;
 
 
-/*
- * This is a variant of the Hello World example in which events are read from a file.
- */
 public class TraceReaderWithSynchro {
 
 	public static void main(String[] args) throws IOException {
-		if(args.length!=4) {
+		if(args.length!=6) {
 			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no)");
 		}
 		
@@ -49,6 +37,8 @@ public class TraceReaderWithSynchro {
 		boolean criticalSymbolApplication = false;
 		if(args[3].equals("yes") || args[3].equals("Yes") || args[3].equals("YES"))
 			criticalSymbolApplication = true;
+		double samplingRate = Double.parseDouble(args[4]);
+		int seed = Integer.parseInt(args[5]);
 		
 		FSM_Base fsm_base;
 		
@@ -64,21 +54,17 @@ public class TraceReaderWithSynchro {
 		}
 
 		if(abstName.contentEquals("set")) {		
-			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec<String>(fsm_base.getFSM()));
-			/*protected boolean shouldMonitor(ISymbol<String, String> symbol, IVariableBinding<String, Integer> binding,
-						Multiset<ISymbol<String, String>> skippedSymbols) {
-				return TraceReader.shouldMonitor();
-			};*/
+			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec<String>(fsm_base.getFSM(), samplingRate, seed));
 		} else if(abstName.contentEquals("num")) {
-			syncingSpec = new NumberSyncingSpec(new FSMSpec(fsm_base.getFSM()));
+			syncingSpec = new NumberSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
 		} else if(abstName.contentEquals("full")) {			
-			syncingSpec = new FullSyncingSpec(new FSMSpec(fsm_base.getFSM()));
+			syncingSpec = new FullSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
 		} else if(abstName.contentEquals("multiset")) {			
-			syncingSpec = new MultisetSyncingSpec(new FSMSpec(fsm_base.getFSM()));
+			syncingSpec = new MultisetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
 		} else if(abstName.contentEquals("sym")) {			
-			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM()));
+			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
 		} else if(abstName.contentEquals("numsym")) {			
-			syncingSpec = new NumberAndSymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM()));
+			syncingSpec = new NumberAndSymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
 		} else {
 			throw new IllegalArgumentException("invalid abstraction: "+abstName);
 		}
@@ -91,6 +77,9 @@ public class TraceReaderWithSynchro {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));		
 		String line;
 		System.out.println("file: "+filePath);
+		
+		long startTime = System.currentTimeMillis();
+		
 		while((line=reader.readLine())!=null) {
 			//skip non-symbol lines
 			boolean foundSym = false;
@@ -101,32 +90,29 @@ public class TraceReaderWithSynchro {
 				}
 			}
 			if(!foundSym) continue;
-			//
-			
+
 			String[] split = line.split(" ");
 			
 			String symbolName = split[0];
 			Symbol<String> symbol = fsm_base.getAlphabet().getSymbolByLabel(symbolName);
 
 			Object[] parameterValues = new Object[fsm_base.getTotalParams()];
-			
-			//System.out.println("Total params: " + fsm_base.getTotalParams());
-			
+						
 			Set<Parameter<?>> params = symbol.getParameters();
 			Iterator<Parameter<?>> it = params.iterator();
 			while(it.hasNext()){
-				Parameter param = it.next();				
+				Parameter<?> param = it.next();				
 				int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
 				parameterValues[param.getIndex()] = Long.parseLong(split[trInd +1]);
 				//System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index " + "trInd: " + trInd);
 			}
 						
-			//System.out.println("Creating Event: " + symbol.getLabel() + " with " + parameterValues[0] + " " + parameterValues[parameterValues.length - 1]);
 			Event e = new Event(symbol, parameterValues);
-			System.out.print("\n" + ((Symbol<String>)e.getBaseEvent()).getLabel());
+			
+			/*System.out.print("\n" + ((Symbol<String>)e.getBaseEvent()).getLabel());
 			it = params.iterator();
-			Parameter param1;
-			Parameter param2;
+			Parameter<?> param1;
+			Parameter<?> param2;
 
 			
 			if(it.hasNext()){
@@ -138,14 +124,19 @@ public class TraceReaderWithSynchro {
 				System.out.print(" " + e.getBoundObject(param2.getIndex())); 
 			}
 			
-			System.out.println("");
+			System.out.println("");*/
+			
 			
 			syncingSpec.maybeProcessEvent(e);
 		}
+		
+		long endTime = System.currentTimeMillis();
 	
+		System.out.println("Time taken: " + (endTime - startTime));
+		System.out.println("counter: " + DefaultParametricMonitor.counter);
 	}
 	
-	protected static Parameter getParam(Set<Parameter<?>> params, int index){
+	protected static Parameter<?> getParam(Set<Parameter<?>> params, int index){
 		Iterator<Parameter<?>> it = params.iterator();
 		while(it.hasNext()){
 			Parameter<?> param = it.next();
