@@ -154,7 +154,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		//this.alphabet = createAlphabet();	// Rahul
 		this.initialState = setupStatesAndTransitions();
 		this.parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
-		maxAbstraction = maxAbstraction.abstractionExcludingSymbols(criticalSymbols);
+		//maxAbstraction = maxAbstraction.abstractionExcludingSymbols(criticalSymbols);
 		
 		this.samplingPeriod = samplingPeriod();
 		System.out.println("sampling period:" + samplingPeriod);
@@ -323,17 +323,19 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 							//register the new state set so that we can later-on add it to the worklist
 							newStateSets.add(newTargets);
 							
-							A newAbstraction = abstraction.add(sym);
-							worklistSyms.add(newAbstraction);
-							Set<FSMState<L>> old = abstractionToStates.get(newAbstraction);
-							if(old==null) {
-								old = new HashSet<FSMState<L>>();
-								abstractionToStates.put(newAbstraction, old);
-							} 
-							old.addAll(symSuccs);
-							//for abstracted events we do not know whether they happened on the same object
-							//or not; hence we could also have stayed in the same set of states
-							old.addAll(frontier);
+							if(!criticalSymbols.contains(sym)){//Rahul
+								A newAbstraction = abstraction.add(sym);
+								worklistSyms.add(newAbstraction);
+								Set<FSMState<L>> old = abstractionToStates.get(newAbstraction);
+								if(old==null) {
+									old = new HashSet<FSMState<L>>();
+									abstractionToStates.put(newAbstraction, old);
+								} 
+								old.addAll(symSuccs);
+								//for abstracted events we do not know whether they happened on the same object
+								//or not; hence we could also have stayed in the same set of states
+								old.addAll(frontier);
+							}
 							
 							baseEvents.add(compoundSymbol);	// Rahul
 							
