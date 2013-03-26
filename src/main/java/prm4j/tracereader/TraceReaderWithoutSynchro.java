@@ -25,12 +25,13 @@ import prm4j.util.*;
  * This is a variant of the Hello World example in which events are read from a file.
  */
 public class TraceReaderWithoutSynchro {
-	static Random random = new Random(20);
-	static int phase = 0;
+	static int phase;
 	static boolean processEventsInCurrentPeriod;
-	static double samplingRate = 0.2d;
-	static int samplingPeriod = 10;
-	static int skipPeriod = (int) ((1.0d/samplingRate - 1) * samplingPeriod);
+	static  double samplingRate;
+	static int samplingPeriod;
+	static int skipPeriod;
+	static Random random;
+
 
 	public static void main(String[] args) throws IOException {
 		if(args.length!=2) {
@@ -39,6 +40,13 @@ public class TraceReaderWithoutSynchro {
 		
 		String filePath = args[0];
 		String propName = args[1];
+		
+		 
+		phase = 0;
+		samplingRate = Double.parseDouble(args[2]);
+		samplingPeriod = 10;
+		skipPeriod = (int) ((1.0d/samplingRate - 1) * samplingPeriod);
+		random = new Random(Integer.parseInt(args[3]));
 		
 		FSM_Base fsm_base;
 		
@@ -100,8 +108,8 @@ public class TraceReaderWithoutSynchro {
 			Event e = new Event(symbol, parameterValues);
 			//System.out.println("\nProcessing event " + ((Symbol<String>)e.getBaseEvent()).getLabel());						
 			
-			if(shouldMonitor())
-				parametricMonitor.processEvent(e);
+			//if(shouldMonitor())
+				//parametricMonitor.processEvent(e);
 		}
 		long endTime = System.currentTimeMillis();
 		

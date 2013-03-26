@@ -174,7 +174,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 	    
 	    // inlined Join from 42
 	    joinPhase: for (JoinData joinData : eventContext.getJoinData(baseEvent)) { // 43
-	    	counter++;
+	    	//counter++;
 
 		// if node does not exist there can't be any joinable monitors
 		final Node compatibleNode = nodeStore.getNode(bindings, joinData.getNodeMask());
