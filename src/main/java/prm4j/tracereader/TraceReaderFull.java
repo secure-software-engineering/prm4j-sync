@@ -18,19 +18,15 @@ import prm4j.api.Symbol;
 import prm4j.api.fsm.FSMSpec;
 import prm4j.indexing.realtime.DefaultNodeStore;
 import prm4j.indexing.realtime.DefaultParametricMonitor;
+import prm4j.indexing.realtime.StatefulMonitor;
 
+import prm4j.sync.AbstractSyncingSpec;
 import prm4j.util.*;
 
 /*
  * This is a variant of the Hello World example in which events are read from a file.
  */
-public class TraceReaderWithoutSynchro {
-	static int phase;
-	static boolean processEventsInCurrentPeriod;
-	static  double samplingRate;
-	static int samplingPeriod;
-	static int skipPeriod;
-	static Random random;
+public class TraceReaderFull {
 
 
 	public static void main(String[] args) throws IOException {
@@ -42,11 +38,6 @@ public class TraceReaderWithoutSynchro {
 		String propName = args[1];
 		
 		 
-		phase = 0;
-		samplingRate = Double.parseDouble(args[2]);
-		samplingPeriod = 10;
-		skipPeriod = (int) ((1.0d/samplingRate - 1) * samplingPeriod);
-		random = new Random(Integer.parseInt(args[3]));
 		
 		FSM_Base fsm_base;
 		
@@ -68,6 +59,12 @@ public class TraceReaderWithoutSynchro {
 			symbols.add(sym.getLabel());
 		}
 		
+		long recordCounter = 0;
+		System.err.println("Size of long: " + Long.SIZE);
+		System.err.println("Max value of long: " + Long.MAX_VALUE);
+		System.err.println("Min value of long: " + Long.MIN_VALUE);
+
+
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));		
 		String line;
 		System.out.println("file: "+filePath);
@@ -85,6 +82,7 @@ public class TraceReaderWithoutSynchro {
 			}
 			if(!foundSym) continue;
 			
+			recordCounter++;
 			
 			String[] split = line.split(" ");
 			
@@ -92,29 +90,24 @@ public class TraceReaderWithoutSynchro {
 			Symbol<String> symbol = fsm_base.getAlphabet().getSymbolByLabel(symbolName);
 
 			Object[] parameterValues = new Object[fsm_base.getTotalParams()];
-			
-			//System.out.println("Total params: " + fsm_base.getTotalParams());
-			
+						
 			Set<Parameter<?>> params = symbol.getParameters();
 			Iterator<Parameter<?>> it = params.iterator();
 			while(it.hasNext()){
 				Parameter<?> param = it.next();				
 				int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
 				parameterValues[param.getIndex()] = Long.parseLong(split[trInd +1]);
-				//System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index " + "trInd: " + trInd);
 			}
 						
-			//System.out.println("Creating Event: " + symbol.getLabel() + " with " + parameterValues[0] + " " + parameterValues[parameterValues.length - 1]);
 			Event e = new Event(symbol, parameterValues);
-			//System.out.println("\nProcessing event " + ((Symbol<String>)e.getBaseEvent()).getLabel());						
 			
-			//if(shouldMonitor())
-				//parametricMonitor.processEvent(e);
+			parametricMonitor.processEvent(e);
 		}
 		long endTime = System.currentTimeMillis();
 		
 		System.out.println("Time taken: " + (endTime - startTime));
-		System.out.println("counter: " + DefaultParametricMonitor.counter);
+		System.out.println("Records processed: " + recordCounter);
+		System.out.println("Errors captured: " + StatefulMonitor.countError);
 
 	}
 	
@@ -126,15 +119,6 @@ public class TraceReaderWithoutSynchro {
 				return param;
 		}
 		return null;
-	}
-	
-	protected static boolean shouldMonitor(){	
-		if(phase==0) {
-			processEventsInCurrentPeriod = random.nextBoolean();
-		}
-		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
-		phase = (phase+1) % periodLength;
-		return processEventsInCurrentPeriod;
 	}
 	
 }

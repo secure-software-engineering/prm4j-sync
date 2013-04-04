@@ -36,7 +36,7 @@ public class DefaultParametricMonitor implements ParametricMonitor {
 
     protected final ParametricMonitorLogger logger;
 
-    public static long counter = 0;
+    //public static long counter = 0;
     /**
      * Creates a DefaultParametricMonitor using default {@link BindingStore} and {@link NodeStore} implementations (and
      * configurations).

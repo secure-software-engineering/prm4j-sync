@@ -15,6 +15,7 @@ import prm4j.api.Symbol;
 import prm4j.api.fsm.FSMSpec;
 import prm4j.indexing.realtime.DefaultNodeStore;
 import prm4j.indexing.realtime.DefaultParametricMonitor;
+import prm4j.indexing.realtime.StatefulMonitor;
 import prm4j.sync.AbstractSyncingSpec;
 import prm4j.sync.FullSyncingSpec;
 import prm4j.sync.MultisetSyncingSpec;
@@ -24,7 +25,7 @@ import prm4j.sync.SymbolSetSyncingSpec;
 import prm4j.util.*;
 
 
-public class TraceReaderWithSynchro {
+public class TraceReaderSynchro {
 
 	public static void main(String[] args) throws IOException {
 		if(args.length!=6) {
@@ -133,7 +134,7 @@ public class TraceReaderWithSynchro {
 		long endTime = System.currentTimeMillis();
 	
 		System.out.println("Time taken: " + (endTime - startTime));
-		System.out.println("counter: " + DefaultParametricMonitor.counter);
+		System.out.println("Errors captured: " + StatefulMonitor.countError);
 	}
 	
 	protected static Parameter<?> getParam(Set<Parameter<?>> params, int index){

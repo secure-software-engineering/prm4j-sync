@@ -17,6 +17,7 @@ import prm4j.api.MatchHandler;
 import prm4j.api.Symbol;
 import prm4j.indexing.BaseMonitorState;
 import prm4j.indexing.Monitor;
+import prm4j.sync.AbstractSyncingSpec;
 import prm4j.sync.AbstractSyncingSpec.AbstractionAndSymbol;
 import prm4j.sync.AbstractSyncingSpec.SyncState;
 import prm4j.sync.AbstractSyncingSpec.SyncFSMMonitor;
@@ -25,6 +26,8 @@ import prm4j.sync.AbstractSyncingSpec.SyncFSMMonitor;
  * A base monitor holding a {@link BaseMonitorState} which is updated when processing {@link BaseEvent}s.
  */
 public class StatefulMonitor extends BaseMonitor {
+	
+	static public long countError = 0;
 
     protected BaseMonitorState state;
 
@@ -71,7 +74,19 @@ public class StatefulMonitor extends BaseMonitor {
 	    // an accepting state)
 	}
 	if(state.isAccepting() && !oldState.isAccepting()){
-		System.out.println("Moved to the error state!");
+		if(AbstractSyncingSpec.isBase){
+			if(this instanceof AbstractSyncingSpec.SyncFSMMonitor){
+				if(((AbstractSyncingSpec.SyncFSMMonitor)this).createRecordCounter > AbstractSyncingSpec.newWindowRecordCounter) {
+					System.err.println("Moved to the error state!");
+					countError++;
+				}
+			} else{
+				System.err.println("Wrong monitor type. Error cannot be captured");
+			}
+		} else {
+				System.err.println("Moved to the error state!");
+				countError++;
+		}	
 	}
 	if (state.isFinal()
 		|| (Globals.CHECK_MONITOR_VALIDITY_ON_EACH_UPDATE && !getMetaNode().isAcceptingStateReachable(

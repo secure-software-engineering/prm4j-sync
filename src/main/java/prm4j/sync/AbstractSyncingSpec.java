@@ -99,6 +99,9 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 */
 	protected boolean didMonitorLastEvent = true;
 	
+	static public long recordCounter = -1;
+	static public long newWindowRecordCounter = -1;
+	static public boolean isBase = false;
 	
 	
 	/**
@@ -476,11 +479,14 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 */
 	@SuppressWarnings("unchecked")
 	public void maybeProcessEvent(Event e) {
+		++recordCounter;
 		Symbol<L> symbol = (Symbol<L>)(e.getBaseEvent());
 		if(shouldMonitor(symbol)) {
 			//System.out.println("*");
-			if(!didMonitorLastEvent)
+			if(!didMonitorLastEvent){
 				reenableTime++;
+				newWindowRecordCounter = recordCounter;
+			}
 			//We need to build the abstraction later, specific to a monitor so do it inside SyncMonitor.
 			Symbol<AbstractionAndSymbol> sym = symbolWithEmptyAbstraction.get(symbol);
 			if(sym == null){
@@ -635,9 +641,12 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 
 		protected long lastAccess;
 		
+		public final long createRecordCounter;
+		
 		public SyncFSMMonitor(FSMState<AbstractionAndSymbol> initialState) {
 			super(initialState);
 			this.state = initialState;
+			this.createRecordCounter = recordCounter;
 		}
 		
 		
