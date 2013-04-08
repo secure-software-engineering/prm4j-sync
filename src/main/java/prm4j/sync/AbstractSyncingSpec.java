@@ -55,7 +55,8 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
     protected final FSMSpec<L> delegate;
     
     
-    final ParametricMonitor parametricMonitor; 
+    //final ParametricMonitor parametricMonitor; 
+    protected ParametricMonitor parametricMonitor; 
 	
 	/**
 	 * The empty multi-set of symbols.
@@ -154,7 +155,6 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 		this.delegate = delegate;
 
 		this.criticalSymbols = delegate.criticalSymbols();
-		//this.alphabet = createAlphabet();	// Rahul
 		this.initialState = setupStatesAndTransitions();
 		this.parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
 		//maxAbstraction = maxAbstraction.abstractionExcludingSymbols(criticalSymbols);
@@ -170,6 +170,10 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 			random = new Random(seed);
 		
 		printSyncSpec();
+	}
+	
+	public void setParametricMonitor(){
+		this.parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
 	}
 
 	private void printSyncSpec(){

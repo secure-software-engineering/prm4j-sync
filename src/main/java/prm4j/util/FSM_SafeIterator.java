@@ -34,12 +34,19 @@ public class FSM_SafeIterator implements FSM_Base{
 
     public final Alphabet alphabet = new Alphabet();
 
-    public final Parameter<Collection> c = alphabet.createParameter("c", Collection.class);
-    public final Parameter<Iterator> i = alphabet.createParameter("i", Iterator.class);
+    /*public final Parameter<Collection> c = alphabet.createParameter("c", Collection.class);
+    public final Parameter<Iterator> i = alphabet.createParameter("i", Iterator.class);*/
+    
+    public final Parameter<Long> c = alphabet.createParameter("c", Long.class);
+    public final Parameter<Long> i = alphabet.createParameter("i", Long.class);
 
-    public final Symbol2<String, Collection, Iterator> createIter = alphabet.createSymbol2("create", c, i);
+    /*public final Symbol2<String, Collection, Iterator> createIter = alphabet.createSymbol2("create", c, i);
     public final Symbol1<String, Collection> updateColl = alphabet.createSymbol1("update", c);
-    public final Symbol1<String, Iterator> useIter = alphabet.createSymbol1("next", i);
+    public final Symbol1<String, Iterator> useIter = alphabet.createSymbol1("next", i);*/
+    
+    public final Symbol2<String, Long, Long> createIter = alphabet.createSymbol2("create", c, i);
+    public final Symbol1<String, Long> updateColl = alphabet.createSymbol1("update", c);
+    public final Symbol1<String, Long> useIter = alphabet.createSymbol1("next", i);
 
     public final FSM fsm = new FSM(alphabet);
 

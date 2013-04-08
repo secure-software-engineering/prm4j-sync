@@ -28,12 +28,12 @@ import prm4j.util.*;
 /*
  * This is a variant of the Hello World example in which events are read from a file.
  */
-public class TraceReaderFull {
+public class TraceReader {
 
 
 	public static void main(String[] args) throws IOException {
 		if(args.length < 2) {
-			System.err.println("USAGE: <pathToTraceFile> (fsi|...) converge/noIter");
+			System.err.println("USAGE: <pathToTraceFile> (fsi|...) converge");
 		}
 		
 		String filePath = args[0];
@@ -60,7 +60,7 @@ public class TraceReaderFull {
 			throw new IllegalArgumentException("invalid monitor spec: "+propName);
 		}
 		
-					
+			
 		FSMSpec fsmspec = new FSMSpec(fsm_base.getFSM());
 		Set<String> symbols = new HashSet<String>();		
 		for (Symbol<String> sym: (Set<Symbol<String>>)fsm_base.getAlphabet().getSymbols()) {
@@ -68,7 +68,6 @@ public class TraceReaderFull {
 		}
 		
 		int totalErrorsCaptured = 0;
-		int totalIterationsPerformed = 0;
 		ArrayList<Double> executionTimes = new ArrayList<Double>();
 		
 		for(int i=0; i < noIter; i++){
@@ -110,31 +109,23 @@ public class TraceReaderFull {
 					parameterValues[param.getIndex()] = split[trInd + 1].intern();
 				}
 							
-				Event e = new Event(symbol, parameterValues);
+				//Event e = new Event(symbol, parameterValues);
 				
-				parametricMonitor.processEvent(e);
+				//parametricMonitor.processEvent(e);
 			}
 			double endTime = (double)System.currentTimeMillis();
 			
-			totalIterationsPerformed = i + 1;
-			System.out.println("Time taken by " + totalIterationsPerformed + "th Iteration: " + (endTime - startTime));
+			System.out.println("Time taken by " + (i+1) + "th Iteration: " + (endTime - startTime));
 			System.out.println("Records processed: " + recordCounter);
-			System.out.println("Errors captured: " + StatefulMonitor.countError);
 			
 			
 			recordCounter = 0;
-			totalErrorsCaptured += StatefulMonitor.countError;
-			StatefulMonitor.countError = 0;
 			executionTimes.add(endTime - startTime);
 			if(converge && isStable(executionTimes)){
-				System.out.println("Converged after " + totalIterationsPerformed + "th Iteration: " + (endTime - startTime));
+				System.out.println("Converged after " + (i+1) + "th Iteration: " + (endTime - startTime));
 				break;
 			}
 		}
-		System.out.println("Total Errors captured: " + totalErrorsCaptured);
-		System.out.println("Total iterations: " + totalIterationsPerformed);
-		System.out.println("Errors per iteration: " + ((double)totalErrorsCaptured)/totalIterationsPerformed);
-
 
 	}
 	

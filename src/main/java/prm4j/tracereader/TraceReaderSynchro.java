@@ -5,8 +5,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import prm4j.api.Event;
@@ -28,8 +31,8 @@ import prm4j.util.*;
 public class TraceReaderSynchro {
 
 	public static void main(String[] args) throws IOException {
-		if(args.length!=6) {
-			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no)");
+		if(args.length < 6) {
+			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no) samplingRate seed converge/noIter");
 		}
 		
 		String filePath = args[0];
@@ -39,7 +42,21 @@ public class TraceReaderSynchro {
 		if(args[3].equals("yes") || args[3].equals("Yes") || args[3].equals("YES"))
 			criticalSymbolApplication = true;
 		double samplingRate = Double.parseDouble(args[4]);
-		int seed = Integer.parseInt(args[5]);
+		Random random = new Random();
+		int seed = random.nextInt();
+		if(args.length >= 6)
+			seed = Integer.parseInt(args[5]);
+		
+		int noIter = 1;
+		boolean converge = false;
+		if(args.length > 6){
+			if(args[6].equals("converge") || args[6].equals("CONVERGE")){
+				converge = true;
+				noIter = 20;
+			} else{
+				noIter = Integer.parseInt(args[6]);
+			}
+		}
 		
 		FSM_Base fsm_base;
 		
@@ -69,72 +86,85 @@ public class TraceReaderSynchro {
 		} else {
 			throw new IllegalArgumentException("invalid abstraction: "+abstName);
 		}
-		
+				
 		Set<String> symbols = new HashSet<String>();		
 		for (Symbol<String> sym: (Set<Symbol<String>>)fsm_base.getAlphabet().getSymbols()) {
 			symbols.add(sym.getLabel());
 		}
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));		
-		String line;
-		System.out.println("file: "+filePath);
+		int totalErrorsCaptured = 0;
+		int totalIterationsPerformed = 0;
+
+		ArrayList<Double> executionTimes = new ArrayList<Double>();
 		
-		long startTime = System.currentTimeMillis();
-		
-		while((line=reader.readLine())!=null) {
-			//skip non-symbol lines
-			boolean foundSym = false;
-			for(String sym: symbols) {
-				if(line.startsWith(sym+" ")) {
-					foundSym = true;
-					break;
+		for(int i=0; i < noIter; i++){
+			
+			System.out.println("Starting " + (i+1) + "th iteration:");
+			
+			syncingSpec.setParametricMonitor();
+
+			long recordCounter = 0;
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));		
+			String line;
+			System.out.println("file: "+filePath);
+			
+			double startTime = (double)System.currentTimeMillis();
+			
+			while((line=reader.readLine())!=null) {
+				//skip non-symbol lines
+				boolean foundSym = false;
+				for(String sym: symbols) {
+					if(line.startsWith(sym+" ")) {
+						foundSym = true;
+						break;
+					}
 				}
-			}
-			if(!foundSym) continue;
+				if(!foundSym) continue;
+	
+				recordCounter++;
 
-			String[] split = line.split(" ");
+				String[] split = line.split(" ");
+				
+				String symbolName = split[0];
+				Symbol<String> symbol = fsm_base.getAlphabet().getSymbolByLabel(symbolName);
+	
+				Object[] parameterValues = new Object[fsm_base.getTotalParams()];
+							
+				Set<Parameter<?>> params = symbol.getParameters();
+				Iterator<Parameter<?>> it = params.iterator();
+				while(it.hasNext()){
+					Parameter<?> param = it.next();				
+					int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
+					parameterValues[param.getIndex()] = split[trInd + 1].intern();
+				}
+							
+				Event e = new Event(symbol, parameterValues);
+				
+				syncingSpec.maybeProcessEvent(e);
+			}
 			
-			String symbolName = split[0];
-			Symbol<String> symbol = fsm_base.getAlphabet().getSymbolByLabel(symbolName);
+			double endTime = (double)System.currentTimeMillis();
+		
+			totalIterationsPerformed = i + 1;
 
-			Object[] parameterValues = new Object[fsm_base.getTotalParams()];
-						
-			Set<Parameter<?>> params = symbol.getParameters();
-			Iterator<Parameter<?>> it = params.iterator();
-			while(it.hasNext()){
-				Parameter<?> param = it.next();				
-				int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
-				parameterValues[param.getIndex()] = Long.parseLong(split[trInd +1]);
-				//System.out.println("Parameter " + param.toString() + " has " + param.getIndex() + " index " + "trInd: " + trInd);
+			System.out.println("Time taken: " + (endTime - startTime));
+			System.out.println("Records processed: " + recordCounter);
+			System.out.println("Errors captured: " + StatefulMonitor.countError);
+			
+			recordCounter = 0;
+			totalErrorsCaptured += StatefulMonitor.countError;
+			StatefulMonitor.countError = 0;
+			executionTimes.add(endTime - startTime);
+			if(converge && isStable(executionTimes)){
+				System.out.println("Converged after " + (i+1) + "th Iteration: " + (endTime - startTime));
+				break;
 			}
-						
-			Event e = new Event(symbol, parameterValues);
-			
-			/*System.out.print("\n" + ((Symbol<String>)e.getBaseEvent()).getLabel());
-			it = params.iterator();
-			Parameter<?> param1;
-			Parameter<?> param2;
-
-			
-			if(it.hasNext()){
-				param1 = it.next();
-				System.out.print(" " + e.getBoundObject(param1.getIndex())); 
-			}
-			if(it.hasNext()){
-				param2 = it.next();
-				System.out.print(" " + e.getBoundObject(param2.getIndex())); 
-			}
-			
-			System.out.println("");*/
-			
-			
-			syncingSpec.maybeProcessEvent(e);
 		}
 		
-		long endTime = System.currentTimeMillis();
-	
-		System.out.println("Time taken: " + (endTime - startTime));
-		System.out.println("Errors captured: " + StatefulMonitor.countError);
+		System.out.println("Total Errors captured: " + totalErrorsCaptured);
+		System.out.println("Total iterations: " + totalIterationsPerformed);
+		System.out.println("Errors per iteration: " + ((double)totalErrorsCaptured)/totalIterationsPerformed);
 	}
 	
 	protected static Parameter<?> getParam(Set<Parameter<?>> params, int index){
@@ -147,6 +177,23 @@ public class TraceReaderSynchro {
 		return null;
 	}
 	
-
+	protected static boolean isStable(List<Double> times){
+		if(times.size() < 3)
+			return false;
+		else {
+			if((((times.get(times.size()-1) - times.get(times.size()-2)) < 
+					(0.03 * times.get(times.size()-1))) && 
+					(times.get(times.size()-2) - times.get(times.size()-1)) < 
+					(0.03 * times.get(times.size()-1))) && 
+					(((times.get(times.size()-2) - times.get(times.size()-3)) < 
+							(0.03 * times.get(times.size()-2))) &&
+							((times.get(times.size()-3) - times.get(times.size()-2))) < 
+							(0.03 * times.get(times.size()-2)))){
+				return true;
+			}
+					
+		}
+		return false;
+	}
 	
 }

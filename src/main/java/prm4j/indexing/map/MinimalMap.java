@@ -88,7 +88,8 @@ public abstract class MinimalMap<K, E extends MinimalMapEntry<K, E>> {
 
 	E lastEntry = null;
 	while (entry != null) {
-	    if (key == entry.getKey()) {
+	    if (key == entry.getKey()) { // Rahul
+		//if (key.equals(entry.getKey())) {
 		return entry;
 	    }
 	    lastEntry = entry;
@@ -129,7 +130,8 @@ public abstract class MinimalMap<K, E extends MinimalMapEntry<K, E>> {
 	E entry = table[index];
 
 	while (entry != null) {
-	    if (key == entry.getKey()) {
+	    if (key == entry.getKey()) { // Rahul
+	    //if (key.equals(entry.getKey())) {	
 		return entry;
 	    }
 	    entry = entry.next();
@@ -188,7 +190,8 @@ public abstract class MinimalMap<K, E extends MinimalMapEntry<K, E>> {
 	E lastEntry = null;
 	while (entry != null) {
 	    final E nextEntry = entry.next();
-	    if (key == entry.getKey()) {
+	    if (key == entry.getKey()) { // Rahul
+	    //if (key.equals(entry.getKey())) {
 		if (lastEntry == null) {
 		    table[hashIndex] = nextEntry;
 		} else {
@@ -233,11 +236,14 @@ public abstract class MinimalMap<K, E extends MinimalMapEntry<K, E>> {
      * @return the hash code
      */
     public int hashCode(K key) {
-	int h = System.identityHashCode(key);
+    	//System.err.println("Key is: " + ((Number)key).intValue());
+ 	int h = System.identityHashCode(key);	// Rahul
+    //int h = ((Number)key).intValue();
 	// This function ensures that hashCodes that differ only by
 	// constant multiples at each bit position have a bounded
 	// number of collisions (approximately 8 at default load factor).
 	h ^= (h >>> 20) ^ (h >>> 12);
+	//System.err.println("hashcode is: " + (h ^ (h >>> 7) ^ (h >>> 4)));
 	return h ^ (h >>> 7) ^ (h >>> 4);
     }
 

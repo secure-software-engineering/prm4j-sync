@@ -44,12 +44,12 @@ public class FSMSpec<L> implements FiniteSpec {
 	initialState = fsm.getInitialState();
 	alphabet = fsm.getAlphabet(); // Rahul
 	criticalSymbols = fsm.getCriticalSymbols(); // Rahul
-	System.out.println("FSMSpec's critical symbol details:");
+	/*System.out.println("FSMSpec's critical symbol details:");
 	for(BaseEvent base: criticalSymbols){
 		@SuppressWarnings("unchecked")
 		Symbol<L> sym = (Symbol<L>)base;
 		System.out.println("sym label: " + sym.getLabel());			
-	}
+	}*/
     }
     
     public FSMSpec(FSM<L> fsm, double samplingRate, int seed){
@@ -67,12 +67,12 @@ public class FSMSpec<L> implements FiniteSpec {
     		alphabet.addCopiedParameter(param);
     	}
     	criticalSymbols = fs.criticalSymbols();	// Rahul
-    	System.out.println("Delegate FSMSpec's critical symbol details:");
+    	/*System.out.println("Delegate FSMSpec's critical symbol details:");
 		for(BaseEvent base: criticalSymbols){
 			@SuppressWarnings("unchecked")
 			Symbol<L> sym = (Symbol<L>)base;
 			System.out.println("sym label: " + sym.getLabel());			
-		}
+		}*/
 		samplingRate = fs.samplingRate;
 		seed = fs.seed;
     }
