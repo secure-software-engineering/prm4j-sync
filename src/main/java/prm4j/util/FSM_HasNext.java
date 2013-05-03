@@ -64,10 +64,13 @@ public class FSM_HasNext implements FSM_Base{
 	    error.addTransition(hasNext, safe);
 	    
    
-	    List<Parameter<?>> li = new LinkedList<Parameter<?>>();
-	    li.add(i);
-	    order.put("hasNext", li);
-	    order.put("next", li);	    
+	    List<Parameter<?>> lh = new LinkedList<Parameter<?>>();
+	    lh.add(i);
+	    order.put("hasNext", lh);
+	    
+	    List<Parameter<?>> ln = new LinkedList<Parameter<?>>();
+	    ln.add(i);
+	    order.put("next", ln);	    
 	
 	}
 	

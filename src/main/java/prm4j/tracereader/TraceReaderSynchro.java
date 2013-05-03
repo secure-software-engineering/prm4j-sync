@@ -186,9 +186,11 @@ public class TraceReaderSynchro {
 				while(it.hasNext()){
 					Parameter<?> param = it.next();				
 					int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
+					System.out.println(trInd);	
 					parameterValues[param.getIndex()] = split[trInd + 1].intern();
 				}
-							
+				System.out.println(symbol);	
+				System.out.println(parameterValues[0].toString());	
 				Event e = new Event(symbol, parameterValues);
 				
 				syncingSpec.maybeProcessEvent(e, samplingThreshold, cpuIdle);
