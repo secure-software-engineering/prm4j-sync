@@ -28,18 +28,17 @@ import prm4j.util.*;
  * This is a variant of the Hello World example in which events are read from a file.
  */
 public class TraceReaderUnsoundSampling {
-	static int phase;
-	static boolean processEventsInCurrentPeriod;
-	static  double samplingRate;
-	static int samplingPeriod;
-	static int skipPeriod;
-	static Random random = new Random();
+	//static int phase;
+	//static boolean processEventsInCurrentPeriod;
+	//static int samplingPeriod;
+	//static int skipPeriod;
+	//static Random random = new Random();
 	
 
 
 	public static void main(String[] args) throws IOException {
 		if(args.length < 6) {
-			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no) samplingRate seed converge/noIter");
+			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no) samplingThreshold seed converge/noIter cpuIdleTimeFile");
 		}
 		
 		String filePath = args[0];
@@ -48,14 +47,19 @@ public class TraceReaderUnsoundSampling {
 		boolean criticalSymbolApplication = false;
 		if(args[3].equals("yes") || args[3].equals("Yes") || args[3].equals("YES"))
 			criticalSymbolApplication = true;
-		double samplingRate = Double.parseDouble(args[4]);
+		double samplingThreshold = Double.parseDouble(args[4]);
 
+		Random random = new Random();
 		int seed = random.nextInt();
-		if(args.length >= 6)
+		if(args.length >= 6){
 			seed = Integer.parseInt(args[5]);
+			random = new Random(seed);
+		}
 		
 		int noIter = 1;
 		boolean converge = false;
+		String cpuIdleFile = null;
+
 		if(args.length > 6){
 			if(args[6].equals("converge") || args[6].equals("CONVERGE")){
 				converge = true;
@@ -63,6 +67,7 @@ public class TraceReaderUnsoundSampling {
 			} else{
 				noIter = Integer.parseInt(args[6]);
 			}
+			cpuIdleFile = args[7];
 		}
 		
 
@@ -74,6 +79,14 @@ public class TraceReaderUnsoundSampling {
 			fsm_base = new FSM_HasNext();
 		} else if(propName.equals("fsi")) {
 			fsm_base = new FSM_SafeIterator();
+		} else if(propName.equals("fmi")) {
+			fsm_base = new FSM_SafeMapIterator(criticalSymbolApplication);
+		} else if(propName.equals("tokenizer")) {
+			fsm_base = new FSM_StringTokenizer(criticalSymbolApplication);
+		} else if(propName.equals("fsc")) {
+			fsm_base = new FSM_SafeSyncCollection(criticalSymbolApplication);
+		} else if(propName.equals("fsm")) {
+			fsm_base = new FSM_SafeSyncMap(criticalSymbolApplication);
 		} else{
 			throw new IllegalArgumentException("invalid monitor spec: "+propName);
 		}
@@ -89,8 +102,33 @@ public class TraceReaderUnsoundSampling {
 		int totalIterationsPerformed = 0;
 		ArrayList<Double> executionTimes = new ArrayList<Double>();
 		
-		samplingPeriod = fsmspec.getStates().size()+4;
-		skipPeriod = (int) ((1.0d/samplingRate - 1) * samplingPeriod); 
+		/*samplingPeriod = fsmspec.getStates().size()+4;
+		skipPeriod = (int) ((1.0d/samplingThreshold - 1) * samplingPeriod); */
+		
+		////////////////////////////////////////////////////////////////////////////
+		///// Reading CPU load figures from the file and then build a circular list
+		////////////////////////////////////////////////////////////////////////////
+		
+		BufferedReader cpuIdleReader = new BufferedReader(new InputStreamReader(new FileInputStream(cpuIdleFile)));
+		
+		String line;
+		int cpuIdleEvents = 0;
+		
+		while((line=cpuIdleReader.readLine())!=null) {
+			//skip non-symbol lines
+			cpuIdleEvents++;
+
+		}
+				
+		double[] cit = new double[cpuIdleEvents];
+		cpuIdleReader = new BufferedReader(new InputStreamReader(new FileInputStream(cpuIdleFile)));
+		int index = 0;
+		while((line=cpuIdleReader.readLine())!=null) {
+			//skip non-symbol lines
+			cit[index++] = Double.parseDouble(line);
+		}		
+		////////////////////////////////////////////////////////////////////////////
+		
 
 		
 		for(int i=0; i < noIter; i++){
@@ -100,9 +138,10 @@ public class TraceReaderUnsoundSampling {
 			ParametricMonitor parametricMonitor = ParametricMonitorFactory.createParametricMonitor(fsmspec);
 
 			long recordCounter = 0;
+			int offset = random.nextInt(cpuIdleEvents);
 		
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));		
-			String line;
+			//String line;
 			System.out.println("file: "+filePath);
 			
 			double startTime = (double)System.currentTimeMillis();
@@ -117,6 +156,8 @@ public class TraceReaderUnsoundSampling {
 					}
 				}
 				if(!foundSym) continue;
+				
+				double cpuIdle = cit[(int)((offset+recordCounter)%cpuIdleEvents)];
 				
 				recordCounter++;
 
@@ -137,10 +178,14 @@ public class TraceReaderUnsoundSampling {
 							
 				Event e = new Event(symbol, parameterValues);
 				
-				if(shouldMonitor())
+				if(shouldMonitor(samplingThreshold, cpuIdle))
 					parametricMonitor.processEvent(e);
 			}
 			long endTime = System.currentTimeMillis();
+			
+			parametricMonitor.reset();
+			
+			System.gc();
 			
 			totalIterationsPerformed = i + 1;
 			System.out.println("Time taken by " + totalIterationsPerformed + "th Iteration: " + (endTime - startTime));
@@ -155,6 +200,8 @@ public class TraceReaderUnsoundSampling {
 				System.out.println("Converged after " + totalIterationsPerformed + "th Iteration: " + (endTime - startTime));
 				break;
 			}
+			
+			System.gc();
 		}
 		
 		System.out.println("Total Errors captured: " + totalErrorsCaptured);
@@ -173,13 +220,17 @@ public class TraceReaderUnsoundSampling {
 		return null;
 	}
 	
-	protected static boolean shouldMonitor(){	
+	/*protected static boolean shouldMonitor(){	
 		if(phase==0) {
 			processEventsInCurrentPeriod = random.nextBoolean();
 		}
 		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
 		phase = (phase+1) % periodLength;
 		return processEventsInCurrentPeriod;
+	}*/
+	
+	protected static boolean shouldMonitor(double samplingThreshold, double cpuIdle){	
+		return (cpuIdle > samplingThreshold);
 	}
 	
 	protected static boolean isStable(List<Double> times){

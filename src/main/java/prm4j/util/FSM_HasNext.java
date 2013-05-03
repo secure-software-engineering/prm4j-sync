@@ -31,10 +31,10 @@ public class FSM_HasNext implements FSM_Base{
 
 	public final Alphabet alphabet = new Alphabet();
 
-	public final Parameter<Iterator> i = alphabet.createParameter("i", Iterator.class);
+	public final Parameter<Long> i = alphabet.createParameter("i", Long.class);
 
-	public final Symbol1<String, Iterator> hasNext = alphabet.createSymbol1("hasNext", i);
-	public final Symbol1<String, Iterator> next = alphabet.createSymbol1("next", i);
+	public final Symbol1<String, Long> hasNext = alphabet.createSymbol1("hasNext", i);
+	public final Symbol1<String, Long> next = alphabet.createSymbol1("next", i);
 
 	public final FSM fsm = new FSM(alphabet);
 

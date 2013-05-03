@@ -56,6 +56,14 @@ public class TraceReaderFull {
 			fsm_base = new FSM_HasNext();
 		} else if(propName.equals("fsi")) {
 			fsm_base = new FSM_SafeIterator();
+		} else if(propName.equals("tokenizer")) {
+			fsm_base = new FSM_StringTokenizer();
+		} else if(propName.equals("fmi")) {
+				fsm_base = new FSM_SafeMapIterator();
+		} else if(propName.equals("fsc")) {
+				fsm_base = new FSM_SafeSyncCollection();
+		} else if(propName.equals("fsm")) {
+				fsm_base = new FSM_SafeSyncMap();
 		} else{
 			throw new IllegalArgumentException("invalid monitor spec: "+propName);
 		}
@@ -116,6 +124,9 @@ public class TraceReaderFull {
 			}
 			double endTime = (double)System.currentTimeMillis();
 			
+			System.gc();
+			parametricMonitor.reset();
+			
 			totalIterationsPerformed = i + 1;
 			System.out.println("Time taken by " + totalIterationsPerformed + "th Iteration: " + (endTime - startTime));
 			System.out.println("Records processed: " + recordCounter);
@@ -130,6 +141,8 @@ public class TraceReaderFull {
 				System.out.println("Converged after " + totalIterationsPerformed + "th Iteration: " + (endTime - startTime));
 				break;
 			}
+			
+			System.gc();
 		}
 		System.out.println("Total Errors captured: " + totalErrorsCaptured);
 		System.out.println("Total iterations: " + totalIterationsPerformed);

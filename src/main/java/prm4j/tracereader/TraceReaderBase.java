@@ -32,7 +32,7 @@ public class TraceReaderBase {
 
 	public static void main(String[] args) throws IOException {
 		if(args.length < 6) {
-			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no) samplingRate seed converge/noIterations");
+			System.err.println("USAGE: <pathToTraceFile> (full|multiset|set) (fsi|...) (critical symbols: yes/no) samplingThreshold seed converge/noIterations cpuIdleTimefile");
 		}
 		
 		String filePath = args[0];
@@ -41,20 +41,24 @@ public class TraceReaderBase {
 		boolean criticalSymbolApplication = false;
 		if(args[3].equals("yes") || args[3].equals("Yes") || args[3].equals("YES"))
 			criticalSymbolApplication = true;
-		double samplingRate = Double.parseDouble(args[4]);
+		double samplingThreshold = Double.parseDouble(args[4]);
 		int seed = Integer.parseInt(args[5]);
+		Random random = new Random(seed);
 		
 		int noIter = 1;
 		boolean converge = false;
-		if(args.length > 6){
+		String cpuIdleFile = null;
+		if(args.length == 8){
 			if(args[6].equals("converge") || args[6].equals("CONVERGE")){
 				converge = true;
 				noIter = 20;
 			} else{
 				noIter = Integer.parseInt(args[6]);
 			}
+			cpuIdleFile = args[7];
 		}
 		
+	
 		FSM_Base fsm_base;
 		
 		AbstractSyncingSpec<String, ?> syncingSpec = null;
@@ -64,22 +68,28 @@ public class TraceReaderBase {
 			fsm_base = new FSM_SafeIterator(criticalSymbolApplication);
 		} else if(propName.equals("tokenizer")) {
 			fsm_base = new FSM_StringTokenizer(criticalSymbolApplication);
+		} else if(propName.equals("fmi")) {
+				fsm_base = new FSM_SafeMapIterator(criticalSymbolApplication);
+		} else if(propName.equals("fsc")) {
+				fsm_base = new FSM_SafeSyncCollection(criticalSymbolApplication);
+		} else if(propName.equals("fsm")) {
+				fsm_base = new FSM_SafeSyncMap(criticalSymbolApplication);
 		}else{
 			throw new IllegalArgumentException("invalid monitor spec: "+propName);
 		}
 
 		if(abstName.contentEquals("set")) {		
-			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec<String>(fsm_base.getFSM(), samplingRate, seed));
+			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec<String>(fsm_base.getFSM(), samplingThreshold, seed));
 		} else if(abstName.contentEquals("num")) {
-			syncingSpec = new NumberSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
+			syncingSpec = new NumberSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingThreshold, seed));
 		} else if(abstName.contentEquals("full")) {			
-			syncingSpec = new FullSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
+			syncingSpec = new FullSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingThreshold, seed));
 		} else if(abstName.contentEquals("multiset")) {			
-			syncingSpec = new MultisetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
+			syncingSpec = new MultisetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingThreshold, seed));
 		} else if(abstName.contentEquals("sym")) {			
-			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
+			syncingSpec = new SymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingThreshold, seed));
 		} else if(abstName.contentEquals("numsym")) {			
-			syncingSpec = new NumberAndSymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingRate, seed));
+			syncingSpec = new NumberAndSymbolSetSyncingSpec(new FSMSpec(fsm_base.getFSM(), samplingThreshold, seed));
 		} else {
 			throw new IllegalArgumentException("invalid abstraction: "+abstName);
 		}
@@ -96,17 +106,44 @@ public class TraceReaderBase {
 
 		ArrayList<Double> executionTimes = new ArrayList<Double>();
 		
+		////////////////////////////////////////////////////////////////////////////
+		///// Reading CPU load figures from the file and then build a circular list
+		////////////////////////////////////////////////////////////////////////////
+		
+		BufferedReader cpuIdleReader = new BufferedReader(new InputStreamReader(new FileInputStream(cpuIdleFile)));
+		
+		String line;
+		int cpuIdleEvents = 0;
+		
+		while((line=cpuIdleReader.readLine())!=null) {
+			//skip non-symbol lines
+			cpuIdleEvents++;
+
+		}
+		
+		double[] cit = new double[cpuIdleEvents];
+		
+		cpuIdleReader = new BufferedReader(new InputStreamReader(new FileInputStream(cpuIdleFile)));
+		int index = 0;
+		while((line=cpuIdleReader.readLine())!=null) {
+			//skip non-symbol lines
+			cit[index++] = Double.parseDouble(line);
+
+		}		
+		////////////////////////////////////////////////////////////////////////////
+		
 
 		for(int i=0; i < noIter; i++){
-
+			
 			System.out.println("Starting " + (i+1) + "th iteration:");
 		
 			syncingSpec.setParametricMonitor();
 
 			long recordCounter = 0;
+			int offset = random.nextInt(cpuIdleEvents);
 	
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));		
-			String line;
+			//String line;
 			System.out.println("file: "+filePath);
 			
 			double startTime = (double)System.currentTimeMillis();
@@ -122,8 +159,9 @@ public class TraceReaderBase {
 				}
 				if(!foundSym) continue;
 				
-				recordCounter++;
-	
+				double cpuIdle = cit[(int)((offset+recordCounter)%cpuIdleEvents)];
+				
+				recordCounter++;	
 				
 				String[] split = line.split(" ");
 				
@@ -143,10 +181,14 @@ public class TraceReaderBase {
 				Event e = new Event(symbol, parameterValues);
 				
 				
-				syncingSpec.maybeProcessEvent(e);
+				syncingSpec.maybeProcessEvent(e, samplingThreshold, cpuIdle);
 			}
 			
 			double endTime = (double)System.currentTimeMillis();
+			
+			syncingSpec.resetParametricMonitor();
+			
+			System.gc();
 			
 			totalIterationsPerformed = i + 1;
 		
@@ -162,6 +204,9 @@ public class TraceReaderBase {
 				System.out.println("Converged after " + (i+1) + "th Iteration: " + (endTime - startTime));
 				break;
 			}
+			
+			System.gc();
+
 		}
 		
 		System.out.println("Total Errors captured: " + totalErrorsCaptured);

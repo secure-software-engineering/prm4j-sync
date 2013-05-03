@@ -103,6 +103,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	static public long recordCounter = -1;
 	static public long newWindowRecordCounter = -1;
 	static public boolean isBase = false;
+	static public long monitoredEvents = 0;
 	
 	
 	/**
@@ -174,6 +175,10 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	
 	public void setParametricMonitor(){
 		this.parametricMonitor = ParametricMonitorFactory.createParametricMonitor(this);
+	}
+	
+	public void resetParametricMonitor(){
+		this.parametricMonitor.reset();
 	}
 
 	private void printSyncSpec(){
@@ -442,7 +447,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 				Symbol<AbstractionAndSymbol> compoundSymbol = symbolAndTargetStates.getKey();
 				Set<FSMState<L>> targetStates = symbolAndTargetStates.getValue();
 				stateFor(source).addTransition(compoundSymbol, stateFor(targetStates));
-				//System.out.println("Adding Transition: from " + stateFor(source).getIndex() + " using " + compoundSymbol.getIndex() + " to " + stateFor(targetStates).getIndex());
+				System.out.println("Adding Transition: from " + stateFor(source).getIndex() + " using " + compoundSymbol.getIndex() + " to " + stateFor(targetStates).getIndex());
 			}			
 		}
 		transitions.clear(); //free space
@@ -463,7 +468,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 				}
 			}		
 			compoundState = makeState(isAccepting);
-			System.err.println(compoundState+" - "+set + " "+ (compoundState.isAccepting()?"Accepting":"NonAccepting"));
+			System.out.println(compoundState+" - "+set + " "+ (compoundState.isAccepting()?"Accepting":"NonAccepting"));
 			stateSetToCompoundState.put(set, compoundState);
 		}
 		return compoundState;
@@ -482,7 +487,7 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 * @param binding the current events's binding
 	 */
 	@SuppressWarnings("unchecked")
-	public void maybeProcessEvent(Event e) {
+	/*public void maybeProcessEvent(Event e) {
 		++recordCounter;
 		Symbol<L> symbol = (Symbol<L>)(e.getBaseEvent());
 		if(shouldMonitor(symbol)) {
@@ -502,6 +507,35 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 			parametricMonitor.processEvent(e);
 			didMonitorLastEvent = true;
 		} else {
+			if(didMonitorLastEvent)
+				deleteHistory();
+			updateHistory(symbol);
+			didMonitorLastEvent = false;
+		}
+	}*/
+	
+	public void maybeProcessEvent(Event e, double samplingThreshold, double cpuIdle) {
+		++recordCounter;
+		Symbol<L> symbol = (Symbol<L>)(e.getBaseEvent());
+		if(shouldMonitor(symbol, samplingThreshold, cpuIdle)) {
+			monitoredEvents++;
+			//System.out.println("monitoring");
+			if(!didMonitorLastEvent){
+				reenableTime++;
+				newWindowRecordCounter = recordCounter;
+			}
+			//We need to build the abstraction later, specific to a monitor so do it inside SyncMonitor.
+			Symbol<AbstractionAndSymbol> sym = symbolWithEmptyAbstraction.get(symbol);
+			if(sym == null){
+				Symbol<AbstractionAndSymbol> targetSymbol = getAlphabet().getSymbolByLabel(new AbstractionAndSymbol(abstraction(EMPTY), symbol));
+				e.setBaseEvent(targetSymbol);
+				symbolWithEmptyAbstraction.put(symbol, targetSymbol);
+			} else
+				e.setBaseEvent(sym);
+			parametricMonitor.processEvent(e);
+			didMonitorLastEvent = true;
+		} else {
+			//System.out.println("not monitoring");
 			if(didMonitorLastEvent)
 				deleteHistory();
 			updateHistory(symbol);
@@ -535,14 +569,17 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 	 * @return 
 	 */
 
-	protected boolean shouldMonitor(Symbol<L> symbol){	
+	/*protected boolean shouldMonitor(Symbol<L> symbol){	
 		if(phase==0) {
 			processEventsInCurrentPeriod = random.nextBoolean();
 		}
 		int periodLength = processEventsInCurrentPeriod ? samplingPeriod : skipPeriod;
 		phase = (phase+1) % periodLength;
 		return processEventsInCurrentPeriod || criticalSymbols.contains(symbol);
-		//return true;
+	}*/
+	
+	protected boolean shouldMonitor(Symbol<L> symbol, double samplingThreshold, double cpuIdle){	
+		return (cpuIdle > samplingThreshold) || criticalSymbols.contains(symbol);
 	}
 
 	
@@ -662,7 +699,8 @@ public abstract class AbstractSyncingSpec<L, A extends AbstractSyncingSpec<L, A>
 			BaseEvent be;
 			boolean status;
 			
-			if(reenableTime==lastAccess) {
+			//if(reenableTime==lastAccess) {
+			if((reenableTime==lastAccess) && !criticalSymbols.isEmpty()) { // added specially for hasnext
 				// don't sync
 				status = super.processEvent(e);
 			} else if(reenableTime == (lastAccess + 1)){

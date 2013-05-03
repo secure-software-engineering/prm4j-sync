@@ -107,13 +107,14 @@ public class TraceReader {
 					Parameter<?> param = it.next();				
 					int trInd = fsm_base.getParameterOrder(symbol.getLabel()).indexOf(param);
 					parameterValues[param.getIndex()] = split[trInd + 1].intern();
-				}
-							
-				//Event e = new Event(symbol, parameterValues);
-				
-				//parametricMonitor.processEvent(e);
+				}							
+
 			}
 			double endTime = (double)System.currentTimeMillis();
+			
+			parametricMonitor.reset();
+			
+			System.gc();
 			
 			System.out.println("Time taken by " + (i+1) + "th Iteration: " + (endTime - startTime));
 			System.out.println("Records processed: " + recordCounter);
@@ -125,6 +126,8 @@ public class TraceReader {
 				System.out.println("Converged after " + (i+1) + "th Iteration: " + (endTime - startTime));
 				break;
 			}
+			
+			System.gc();
 		}
 
 	}

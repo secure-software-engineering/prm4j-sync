@@ -36,7 +36,7 @@ public class FSM_StringTokenizer implements FSM_Base{
 
 	public final Symbol1<String, StringTokenizer> hasNext = alphabet.createSymbol1("hasNext", st);
 	public final Symbol1<String, StringTokenizer> next = alphabet.createSymbol1("next", st);
-	public final Symbol1<String, StringTokenizer> hasMoreTokens = alphabet.createSymbol1("hasMoreTokens", st);
+	public final Symbol1<String, StringTokenizer> countTokens = alphabet.createSymbol1("countTokens", st);
 
 	public final FSM fsm = new FSM(alphabet);
 
@@ -61,23 +61,23 @@ public class FSM_StringTokenizer implements FSM_Base{
 	public FSM_StringTokenizer(boolean criticalSymbolApplication) {
 	    initial.addTransition(hasNext, safe);
 	    initial.addTransition(next, error);
-	    initial.addTransition(hasMoreTokens, trap);
+	    initial.addTransition(countTokens, trap);
 	    safe.addTransition(hasNext, safe);
 	    safe.addTransition(next, initial);
-	    safe.addTransition(hasMoreTokens, trap);
+	    safe.addTransition(countTokens, trap);
 	    error.addTransition(next, error);
 	    error.addTransition(hasNext, safe);
-	    error.addTransition(hasMoreTokens, trap);
+	    error.addTransition(countTokens, trap);
 	    
 		if(criticalSymbolApplication)
-			fsm.addCriticalSymbol(hasMoreTokens);
+			fsm.addCriticalSymbol(countTokens);
 	    
    
 	    List<Parameter<?>> li = new LinkedList<Parameter<?>>();
 	    li.add(st);
 	    order.put("hasNext", li);
 	    order.put("next", li);
-	    order.put("hasMoreTokens", li);
+	    order.put("countTokens", li);
 	
 	}
 	
